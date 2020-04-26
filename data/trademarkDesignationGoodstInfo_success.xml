@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <header>
+        <resultCode></resultCode>
+        <resultMsg></resultMsg>
+    </header>
+    <body>
+        <items>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>1</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G270101</SimilargroupCode>
+                <DesignationGoodsHangeulName>골프화</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>2</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G270101</SimilargroupCode>
+                <DesignationGoodsHangeulName>가죽신</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>3</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G270101</SimilargroupCode>
+                <DesignationGoodsHangeulName>운동화</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>4</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G4503</SimilargroupCode>
+                <DesignationGoodsHangeulName>스웨터</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>5</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G430301</SimilargroupCode>
+                <DesignationGoodsHangeulName>스포츠셔츠</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>6</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G4503</SimilargroupCode>
+                <DesignationGoodsHangeulName>조끼</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>7</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G4503</SimilargroupCode>
+                <DesignationGoodsHangeulName>카디건</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>8</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G4503</SimilargroupCode>
+                <DesignationGoodsHangeulName>폴로셔츠</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>9</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G4503</SimilargroupCode>
+                <DesignationGoodsHangeulName>T셔츠</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>10</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G450401</SimilargroupCode>
+                <DesignationGoodsHangeulName>목도리</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>11</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G450401</SimilargroupCode>
+                <DesignationGoodsHangeulName>양말</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>12</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G450501</SimilargroupCode>
+                <DesignationGoodsHangeulName>모자</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+            <trademarkDesignationGoodstInfo>
+                <DesignationGoodsSerialNumber>13</DesignationGoodsSerialNumber>
+                <DesignationGoodsClassificationInformationCode>25</DesignationGoodsClassificationInformationCode>
+                <SimilargroupCode>G4508</SimilargroupCode>
+                <DesignationGoodsHangeulName>혁대</DesignationGoodsHangeulName>
+                <DesignationGoodsEnglishsentenceName> </DesignationGoodsEnglishsentenceName>
+            </trademarkDesignationGoodstInfo>
+        </items>
+    </body>
+</response>

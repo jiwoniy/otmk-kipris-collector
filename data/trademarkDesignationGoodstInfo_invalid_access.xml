@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <header>
+        <resultCode>30</resultCode>
+        <resultMsg>Invalid AccessKey Error</resultMsg>
+    </header>
+    <body>
+        <items>
+		</items>
+    </body>
+</response>
