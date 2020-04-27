@@ -1,4 +1,4 @@
-package crawlers
+package collector
 
 import (
 	"encoding/json"
@@ -6,17 +6,17 @@ import (
 	"io/ioutil"
 )
 
-type crawlerConfig struct {
+type collectorConfig struct {
 	Endpoint   string `json:"endpoint"`
 	AccessKey  string `json:"access_key"`
 	ListenAddr string `json:"listen_addr"`
 }
 
-func NewCrawler(endpoint string) (*kiprisCrawler, error) {
+func NewCollector() (*kiprisCollector, error) {
 	configPath := flag.String("cfg", "./config.json", "path to the configuration file")
 	flag.Parse()
 
-	var cfg crawlerConfig
+	var cfg collectorConfig
 
 	cfgData, err := ioutil.ReadFile(*configPath)
 	if err != nil {

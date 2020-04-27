@@ -15,7 +15,7 @@ func New(config crawlerConfig) *kiprisCrawler {
 	return &kiprisCrawler{
 		endpt:     config.Endpoint,
 		accessKey: config.AccessKey,
-		parser:    parse.New("xml"),
+		parser:    parse.NewParse("xml"),
 	}
 }
 
