@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -24,17 +25,18 @@ type RESTCaller struct {
 // RESTCallerBuilder is a builder class that helps creating RESTCaller
 type RESTCallerBuilder struct {
 	root     string
-	timeout  string
 	respType string
+	timeout  string
 }
 
 // BuildRESTCaller returns a newly created RESTCaller builder object that helps you
 // configure the RESTCaller
 func BuildRESTCaller(root string) *RESTCallerBuilder {
 	return &RESTCallerBuilder{
-		root:     root,
-		respType: "json",
-		timeout:  "1s",
+		root: root,
+		// respType: "json",
+		respType: "text/xml; charset=utf-8",
+		timeout:  "3s",
 	}
 }
 
@@ -60,6 +62,7 @@ func (b *RESTCallerBuilder) Build() (*RESTCaller, error) {
 
 	availRespTypes := []string{
 		"json",
+		"text/xml; charset=utf-8",
 	}
 
 	respTypeAllowed := false
@@ -81,17 +84,44 @@ func (b *RESTCallerBuilder) Build() (*RESTCaller, error) {
 	}, nil
 }
 
+func (b *RESTCaller) GetRespType() string {
+	return b.respType
+}
+
+func (b *RESTCaller) setHeaders(headers *http.Header) {
+	if b.respType == "json" {
+		headers.Set("Content-Type", "application/json")
+	}
+
+	if b.respType == "text/xml; charset=utf-8" {
+		headers.Set("Content-Type", "text/xml; charset=utf-8")
+	}
+}
+
+func (b *RESTCaller) Unmarshal(body []byte, dest interface{}) error {
+	if b.respType == "json" {
+		err := json.Unmarshal(body, dest)
+		return err
+	}
+
+	if b.respType == "text/xml; charset=utf-8" {
+		err := xml.Unmarshal(body, dest)
+		return err
+	}
+
+	return nil
+}
+
 // Get calls REST API through GET method
 func (rest *RESTCaller) Get(url string, params map[string]string, headers *http.Header, dest interface{}) error {
 	if headers == nil {
 		headers = &http.Header{}
 	}
 
-	if rest.respType == "json" {
-		headers.Set("Content-Type", "application/json")
-	}
+	rest.setHeaders(headers)
 
 	var getParam = ""
+
 	if params != nil {
 		first := true
 		for prmName, prmValue := range params {
@@ -101,6 +131,7 @@ func (rest *RESTCaller) Get(url string, params map[string]string, headers *http.
 				getParam += "?"
 			}
 			getParam += fmt.Sprintf("%s=%s", urllib.QueryEscape(prmName), urllib.QueryEscape(prmValue))
+			first = false
 		}
 	}
 	url += getParam
@@ -113,15 +144,19 @@ func (rest *RESTCaller) Get(url string, params map[string]string, headers *http.
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
 		log.Printf("[GET] %s (error: %s)", url, err.Error())
 		return err
 	}
 	log.Printf("[GET] %s (%d bytes)", url, len(body))
 
-	if rest.respType == "json" {
-		err = json.Unmarshal(body, dest)
+	err = rest.Unmarshal(body, dest)
+	if err != nil {
+		log.Printf("[POST] %s (error: %s)", url, err.Error())
+		return err
 	}
+
 	return err
 }
 
@@ -132,10 +167,7 @@ func (rest *RESTCaller) Post(url string, data []byte, headers *http.Header, dest
 		headers = &http.Header{}
 	}
 
-	// rest.respType
-	if rest.respType == "json" {
-		headers.Set("Content-Type", "application/json")
-	}
+	rest.setHeaders(headers)
 
 	reqReader := bytes.NewReader(data)
 
@@ -154,8 +186,11 @@ func (rest *RESTCaller) Post(url string, data []byte, headers *http.Header, dest
 		return err
 	}
 
-	if rest.respType == "json" {
-		err = json.Unmarshal(body, dest)
+	err = rest.Unmarshal(body, dest)
+	if err != nil {
+		log.Printf("[POST] %s (error: %s)", url, err.Error())
+		return err
 	}
+
 	return err
 }

@@ -15,9 +15,7 @@ limitations under the License.
 */
 package main
 
-import (
-	"kipris-collector/cmd"
-)
+import "kipris-collector/cmd"
 
 func main() {
 	cmd.Execute()
