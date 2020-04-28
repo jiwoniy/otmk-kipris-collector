@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <header>
+        <resultCode>30</resultCode>
+        <!-- <resultMsg>등록된 서비스키를 입력해 주십시오(Access key &amp; Service key is not registerd error)</resultMsg> -->
+        <resultMsg></resultMsg>
+    </header>
+    <!-- <body>
+        <items>
+            <TotalSearchCount></TotalSearchCount>
+        </items>
+    </body> -->
+</response>
