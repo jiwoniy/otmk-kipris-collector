@@ -1,4 +1,4 @@
-package parserTest
+package parser
 
 import (
 	"errors"
