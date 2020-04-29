@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <header>
+        <resultCode>10</resultCode>
+        <!-- <resultMsg>nvalid Request Parameters Error</resultMsg> -->
+        <resultMsg></resultMsg>
+    </header>
+    <!-- <body>
+        <items>
+            <TotalSearchCount></TotalSearchCount>
+        </items>
+    </body> -->
+</response>

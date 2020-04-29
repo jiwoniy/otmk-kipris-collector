@@ -1,4 +1,4 @@
-package collector
+package storage
 
 import (
 	"encoding/json"
@@ -7,17 +7,17 @@ import (
 	"kipris-collector/types"
 )
 
-type collectorConfig struct {
-	Endpoint   string `json:"endpoint"`
-	AccessKey  string `json:"access_key"`
-	ListenAddr string `json:"listen_addr"`
+type storageConfig struct {
+	// base on gorm format
+	DbType       string `json:"dbType"`
+	DbConnString string `json:"dbConnString"`
 }
 
-func New() (types.Collector, error) {
+func New() (types.Storage, error) {
 	configPath := flag.String("cfg", "./config.json", "path to the configuration file")
 	flag.Parse()
 
-	var cfg collectorConfig
+	var cfg storageConfig
 
 	cfgData, err := ioutil.ReadFile(*configPath)
 	if err != nil {
@@ -28,9 +28,9 @@ func New() (types.Collector, error) {
 		return nil, err
 	}
 
-	c, err := NewCollector(cfg)
-	if err != nil {
+	if c, err := NewStorage(cfg); err != nil {
 		return nil, err
+	} else {
+		return c, nil
 	}
-	return c, nil
 }

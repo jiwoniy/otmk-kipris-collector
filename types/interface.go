@@ -11,9 +11,14 @@ type Parser interface {
 	// GetNetwork() Network
 }
 
-type Crawler interface {
-	// GetTx(hash string) (*TxInfo, error)
-	// GetTxsFromHeight(height uint64) ([]string, error)
-	// GetLatestHeight() (uint64, error)
-	// GetNetwork() Network
+type Collector interface {
+	GetEndpoint() string
+	GetAccessKey() string
+	GetParser() Parser
+	Get(url string, params map[string]string, dest interface{}) error
+}
+
+type Storage interface {
+	CloseDB()
+	Create(v interface{}) error
 }

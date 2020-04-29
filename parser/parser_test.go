@@ -211,13 +211,28 @@ func TestParsing(t *testing.T) {
 			},
 		},
 		{
-			input:          "./Error.xml",
+			input:          "./Error_InvalidKey.xml",
 			responseStatus: Error,
 			data: KiprisResponse{
 				Header: Header{
 					ResultCode: "30",
 					// ResultMsg:  "등록된 서비스키를 입력해 주십시오(Access key &amp; Service key is not registerd error)",
 					ResultMsg: "",
+				},
+				// Body: Body{
+				// 	Items: Items{
+				// 		TotalSearchCount: "",
+				// 	},
+				// },
+			},
+		},
+		{
+			input:          "./Error_EmptyApplicationNumber.xml",
+			responseStatus: Error,
+			data: KiprisResponse{
+				Header: Header{
+					ResultCode: "10",
+					ResultMsg:  "",
 				},
 				// Body: Body{
 				// 	Items: Items{
