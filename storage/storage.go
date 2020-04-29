@@ -27,6 +27,19 @@ func migrate(db *gorm.DB) {
 	db.AutoMigrate(&model.TradeMarkInfo{})
 }
 
+// func NewStorage(dbType string, dbConnString string) (types.Storage, error) {
+// 	db, err := open(dbType, dbConnString)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	db.AutoMigrate(&model.TradeMarkInfo{})
+
+// 	return &storage{
+// 		db: db,
+// 	}, nil
+// }
+
 func NewStorage(config storageConfig) (types.Storage, error) {
 	db, err := open(config.DbType, config.DbConnString)
 	if err != nil {

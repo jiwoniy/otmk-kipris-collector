@@ -2,8 +2,10 @@ package collector
 
 import (
 	"fmt"
-	"kipris-collector/parser"
 	"testing"
+
+	"kipris-collector/parser"
+	// "kipris-collector/model"
 )
 
 type testcases struct {
@@ -102,3 +104,23 @@ func TestCollector(t *testing.T) {
 		}
 	}
 }
+
+// func TestRealCollector(t *testing.T) {
+// 	collector, _ := New()
+// 	params := map[string]string{
+// 		"applicationNumber": "4020200000001", // valid number
+// 		"accessKey":         collector.GetAccessKey(),
+// 	}
+// 	dest := parser.KiprisResponse{}
+// 	err := collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params, &dest)
+// 	if err != nil {
+// 		t.Error(err)
+// 	}
+
+// 	collector.GetStorage()
+// 	fmt.Println(dest)
+
+// 	tradeMarkInfo := model.TradeMarkInfo(dest)
+// 	storage.Create(&dest)
+	
+// }

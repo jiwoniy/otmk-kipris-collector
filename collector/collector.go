@@ -4,23 +4,30 @@ import (
 	"kipris-collector/parser"
 	"kipris-collector/types"
 	"kipris-collector/utils"
+	// "kipris-collector/storage"
 )
 
 type kiprisCollector struct {
 	endpt     string
 	accessKey string
 	parser    types.Parser
+	// storage types.Storage
 }
 
 func NewCollector(config collectorConfig) (types.Collector, error) {
 	parserInstance, err := parser.NewParser("xml")
+	
 	if err != nil {
 		return nil, err
 	}
+
+	// storage, err := storage.New()
+
 	return &kiprisCollector{
 		endpt:     config.Endpoint,
 		accessKey: config.AccessKey,
 		parser:    parserInstance,
+		// storage: storage,
 	}, nil
 }
 
@@ -35,6 +42,10 @@ func (c *kiprisCollector) GetAccessKey() string {
 func (c *kiprisCollector) GetParser() types.Parser {
 	return c.parser
 }
+
+// func (c *kiprisCollector) GetStorage() types.Storage {
+// 	return c.storage
+// }
 
 func (c *kiprisCollector) Get(url string, params map[string]string, dest interface{}) error {
 	caller, err := utils.BuildRESTCaller(c.endpt).Build()
