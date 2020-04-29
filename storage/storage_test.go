@@ -24,7 +24,7 @@ func TestCreate(t *testing.T) {
 
 	tradeMarkInfo := model.TradeMarkInfo{
 		SerialNumber:       "1",
-		ApplicationNumber:  "4020190000011b",
+		ApplicationNumber:  "1112211",
 		AppReferenceNumber: time.Now().String(),
 		ApplicationDate:    "20190101",
 	}
@@ -33,5 +33,4 @@ func TestCreate(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-
 }

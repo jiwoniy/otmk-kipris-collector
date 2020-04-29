@@ -23,7 +23,7 @@ func open(dbType string, dbConnString string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func migrade(db *gorm.DB) {
+func migrate(db *gorm.DB) {
 	db.AutoMigrate(&model.TradeMarkInfo{})
 }
 
@@ -32,6 +32,8 @@ func NewStorage(config storageConfig) (types.Storage, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	db.AutoMigrate(&model.TradeMarkInfo{})
 
 	return &storage{
 		db: db,
@@ -43,11 +45,11 @@ func (s *storage) CloseDB() {
 }
 
 func (s *storage) Create(v interface{}) error {
-	if isNotExist := s.db.NewRecord(v); isNotExist == false {
-		return errors.New(fmt.Sprintf("This data already exist %v", v))
+	if isCheck := s.db.NewRecord(v); isCheck == false {
+		return errors.New(fmt.Sprintf("this data can not create %v", v))
 	}
 
-	s.db.Create(&v)
+	s.db.Create(v)
 
 	if isFail := s.db.NewRecord(v); isFail == true {
 		return errors.New(fmt.Sprintf("create data is fail %v", v))

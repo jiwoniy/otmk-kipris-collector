@@ -4,11 +4,12 @@ import "time"
 
 // sync with parser/kipris_xml_model
 type TradeMarkInfo struct {
-	ApplicationNumber string `gorm:"primary_key"`
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
-	DeletedAt         *time.Time
+	ID        string `gorm:"primary_key"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
 
+	ApplicationNumber  string `gorm:"unique;not null"`
 	SerialNumber       string
 	AppReferenceNumber string
 	ApplicationDate    string
