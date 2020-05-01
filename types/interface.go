@@ -15,8 +15,8 @@ type Collector interface {
 	GetEndpoint() string
 	GetAccessKey() string
 	GetParser() Parser
-	// GetStorage() Storage
-	Get(url string, params map[string]string, dest interface{}) error
+	GetStorage() Storage
+	Get(url string, params map[string]string) ([]byte, error)
 }
 
 type Storage interface {

@@ -7,7 +7,7 @@ import (
 	"kipris-collector/types"
 )
 
-type storageConfig struct {
+type StorageConfig struct {
 	// base on gorm format
 	DbType       string `json:"dbType"`
 	DbConnString string `json:"dbConnString"`
@@ -17,7 +17,7 @@ func New() (types.Storage, error) {
 	configPath := flag.String("cfg", "./config.json", "path to the configuration file")
 	flag.Parse()
 
-	var cfg storageConfig
+	var cfg StorageConfig
 
 	cfgData, err := ioutil.ReadFile(*configPath)
 	if err != nil {

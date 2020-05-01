@@ -2,8 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -98,22 +96,22 @@ func (b *RESTCaller) setHeaders(headers *http.Header) {
 	}
 }
 
-func (b *RESTCaller) Unmarshal(body []byte, dest interface{}) error {
-	if b.respType == "json" {
-		err := json.Unmarshal(body, dest)
-		return err
-	}
+// func (b *RESTCaller) Unmarshal(body []byte, dest interface{}) error {
+// 	if b.respType == "json" {
+// 		err := json.Unmarshal(body, dest)
+// 		return err
+// 	}
 
-	if b.respType == "text/xml; charset=utf-8" {
-		err := xml.Unmarshal(body, dest)
-		return err
-	}
+// 	if b.respType == "text/xml; charset=utf-8" {
+// 		err := xml.Unmarshal(body, dest)
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // Get calls REST API through GET method
-func (rest *RESTCaller) Get(url string, params map[string]string, headers *http.Header, dest interface{}) error {
+func (rest *RESTCaller) Get(headers *http.Header, url string, params map[string]string) ([]byte, error) {
 	if headers == nil {
 		headers = &http.Header{}
 	}
@@ -137,31 +135,34 @@ func (rest *RESTCaller) Get(url string, params map[string]string, headers *http.
 	url += getParam
 
 	client := httpclient.NewClient(httpclient.WithHTTPTimeout(rest.timeout))
+
 	resp, err := client.Get(fmt.Sprintf("%s%s", rest.root, url), *headers)
 	if err != nil {
 		log.Printf("[GET] %s (error: %s)", url, err.Error())
-		return err
+		return nil, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Printf("[GET] %s (error: %s)", url, err.Error())
-		return err
+		return nil, err
 	}
 	log.Printf("[GET] %s (%d bytes)", url, len(body))
 
-	err = rest.Unmarshal(body, dest)
-	if err != nil {
-		log.Printf("[POST] %s (error: %s)", url, err.Error())
-		return err
-	}
+	return body, err
 
-	return err
+	// err = rest.Unmarshal(body, dest)
+	// if err != nil {
+	// 	log.Printf("[POST] %s (error: %s)", url, err.Error())
+	// 	return nil, err
+	// }
+
+	// return nil, err
 }
 
 // Post calls REST API through POST method
-func (rest *RESTCaller) Post(url string, data []byte, headers *http.Header, dest interface{}) error {
+func (rest *RESTCaller) Post(headers *http.Header, url string, data []byte) ([]byte, error) {
 
 	if headers == nil {
 		headers = &http.Header{}
@@ -175,22 +176,15 @@ func (rest *RESTCaller) Post(url string, data []byte, headers *http.Header, dest
 	resp, err := client.Post(fmt.Sprintf("%s%s", rest.root, url), reqReader, *headers)
 	if err != nil {
 		log.Printf("[POST] %s (error: %s)", url, err.Error())
-		return err
+		return nil, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
-	log.Printf("[POST] %s (%d bytes)", url, len(body))
 
 	if err != nil {
 		log.Printf("[POST] %s (error: %s)", url, err.Error())
-		return err
+		return nil, err
 	}
 
-	err = rest.Unmarshal(body, dest)
-	if err != nil {
-		log.Printf("[POST] %s (error: %s)", url, err.Error())
-		return err
-	}
-
-	return err
+	return body, err
 }

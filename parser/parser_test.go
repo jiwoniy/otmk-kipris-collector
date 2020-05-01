@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"kipris-collector/model"
 	"reflect"
 	"testing"
 )
@@ -9,7 +10,7 @@ type testcases struct {
 	input          string
 	success        bool
 	data           interface{}
-	responseStatus KiprisResponseStatus
+	responseStatus model.KiprisResponseStatus
 }
 
 func TestParserInstance(t *testing.T) {
@@ -42,15 +43,15 @@ func TestRead(t *testing.T) {
 	parser, _ := NewParser("xml")
 	tests := []testcases{
 		{
-			input:   "./TrademarkDesignationGoodstInfo.xml",
+			input:   "./test_data/TrademarkDesignationGoodstInfo.xml",
 			success: true,
 		},
 		{
-			input:   "./notExistFile.xml",
+			input:   "./test_data/notExistFile.xml",
 			success: false,
 		},
 		{
-			input:   "./TradeMarkInfo.xml",
+			input:   "./test_data/TradeMarkInfo.xml",
 			success: true,
 		},
 	}
@@ -68,17 +69,17 @@ func TestParsing(t *testing.T) {
 	parser, _ := NewParser("xml")
 	tests := []testcases{
 		{
-			input:          "./TrademarkDesignationGoodstInfo.xml",
-			responseStatus: Success,
+			input:          "./test_data/TrademarkDesignationGoodstInfo.xml",
+			responseStatus: model.Success,
 			// success: true,
-			data: KiprisResponse{
-				Header: Header{
+			data: model.KiprisResponse{
+				Header: model.Header{
 					ResultCode: "",
 					ResultMsg:  "",
 				},
-				Body: Body{
-					Items: Items{
-						TrademarkDesignationGoodstInfo: []TrademarkDesignationGoodstInfo{
+				Body: model.Body{
+					Items: model.Items{
+						TrademarkDesignationGoodstInfo: []model.TrademarkDesignationGoodstInfo{
 							{
 								DesignationGoodsSerialNumber:                  "1",
 								DesignationGoodsClassificationInformationCode: "43",
@@ -139,17 +140,17 @@ func TestParsing(t *testing.T) {
 			},
 		},
 		{
-			input:          "./TradeMarkInfo.xml",
-			responseStatus: Success,
-			data: KiprisResponse{
-				Header: Header{
+			input:          "./test_data/TradeMarkInfo.xml",
+			responseStatus: model.Success,
+			data: model.KiprisResponse{
+				Header: model.Header{
 					ResultCode: "",
 					ResultMsg:  "",
 				},
-				Body: Body{
-					Items: Items{
+				Body: model.Body{
+					Items: model.Items{
 						TotalSearchCount: "1",
-						TradeMarkInfo: TradeMarkInfo{
+						TradeMarkInfo: model.TradeMarkInfo{
 							SerialNumber:       "1",
 							ApplicationNumber:  "4020190000011",
 							AppReferenceNumber: "",
@@ -183,38 +184,38 @@ func TestParsing(t *testing.T) {
 			},
 		},
 		{
-			input:          "./Empty_TradeMarkInfo.xml",
-			responseStatus: Empty,
-			data: KiprisResponse{
-				Header: Header{
+			input:          "./test_data/Empty_TradeMarkInfo.xml",
+			responseStatus: model.Empty,
+			data: model.KiprisResponse{
+				Header: model.Header{
 					ResultCode: "",
 					ResultMsg:  "",
 				},
-				Body: Body{
-					Items: Items{
+				Body: model.Body{
+					Items: model.Items{
 						TotalSearchCount: "0",
 					},
 				},
 			},
 		},
 		{
-			input:          "./Empty_TrademarkDesignationGoodstInfo.xml",
-			responseStatus: Empty,
-			data: KiprisResponse{
-				Header: Header{
+			input:          "./test_data/Empty_TrademarkDesignationGoodstInfo.xml",
+			responseStatus: model.Empty,
+			data: model.KiprisResponse{
+				Header: model.Header{
 					ResultCode: "",
 					ResultMsg:  "",
 				},
-				Body: Body{
-					Items: Items{},
+				Body: model.Body{
+					Items: model.Items{},
 				},
 			},
 		},
 		{
-			input:          "./Error_InvalidKey.xml",
-			responseStatus: Error,
-			data: KiprisResponse{
-				Header: Header{
+			input:          "./test_data/Error_InvalidKey.xml",
+			responseStatus: model.Error,
+			data: model.KiprisResponse{
+				Header: model.Header{
 					ResultCode: "30",
 					// ResultMsg:  "등록된 서비스키를 입력해 주십시오(Access key &amp; Service key is not registerd error)",
 					ResultMsg: "",
@@ -227,17 +228,17 @@ func TestParsing(t *testing.T) {
 			},
 		},
 		{
-			input:          "./Error_EmptyApplicationNumber.xml",
-			responseStatus: Error,
-			data: KiprisResponse{
-				Header: Header{
+			input:          "./test_data/Error_EmptyApplicationNumber.xml",
+			responseStatus: model.Error,
+			data: model.KiprisResponse{
+				Header: model.Header{
 					ResultCode: "10",
 					ResultMsg:  "",
 				},
 				// Body: Body{
 				// 	Items: Items{
 				// 		TotalSearchCount: "",
-				// 	},
+				// 	},w
 				// },
 			},
 		},
@@ -248,7 +249,7 @@ func TestParsing(t *testing.T) {
 		if tc.success == true && err != nil {
 			t.Error(err)
 		}
-		var data KiprisResponse
+		var data model.KiprisResponse
 		parser.Parse(content, &data)
 
 		isSame := reflect.DeepEqual(tc.data, data)

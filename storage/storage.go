@@ -27,20 +27,7 @@ func migrate(db *gorm.DB) {
 	db.AutoMigrate(&model.TradeMarkInfo{})
 }
 
-// func NewStorage(dbType string, dbConnString string) (types.Storage, error) {
-// 	db, err := open(dbType, dbConnString)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	db.AutoMigrate(&model.TradeMarkInfo{})
-
-// 	return &storage{
-// 		db: db,
-// 	}, nil
-// }
-
-func NewStorage(config storageConfig) (types.Storage, error) {
+func NewStorage(config StorageConfig) (types.Storage, error) {
 	db, err := open(config.DbType, config.DbConnString)
 	if err != nil {
 		return nil, err
@@ -59,13 +46,13 @@ func (s *storage) CloseDB() {
 
 func (s *storage) Create(v interface{}) error {
 	if isCheck := s.db.NewRecord(v); isCheck == false {
-		return errors.New(fmt.Sprintf("this data can not create %v", v))
+		return errors.New(fmt.Sprintf("Can not create %v", v))
 	}
 
 	s.db.Create(v)
 
 	if isFail := s.db.NewRecord(v); isFail == true {
-		return errors.New(fmt.Sprintf("create data is fail %v", v))
+		return errors.New(fmt.Sprintf("Fail to create data(maybe ApplicationNumber already exist) %v", v))
 	}
 	return nil
 }

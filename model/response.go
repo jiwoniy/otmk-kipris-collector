@@ -1,4 +1,4 @@
-package parser
+package model
 
 import (
 	"encoding/xml"
@@ -65,6 +65,5 @@ func (res *KiprisResponse) Result() KiprisResponseStatus {
 		return Empty
 	}
 
-	// fmt.Println(data)
 	return Success
 }
