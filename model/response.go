@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/xml"
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -15,6 +16,16 @@ const (
 )
 
 type TrimString string
+
+// func (a Animal) String() string {
+// 	return fmt.Sprintf("%v (%d)", a.Name, a.Age)
+// }
+
+func (str *TrimString) String() string {
+	fmt.Println("-----")
+	fmt.Println(*str)
+	return fmt.Sprintf("%s", *str)
+}
 
 // custom xml string for whitespace trim
 func (str *TrimString) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {

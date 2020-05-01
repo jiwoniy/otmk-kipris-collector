@@ -10,6 +10,12 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
+type StorageConfig struct {
+	// base on gorm format
+	DbType       string `json:"dbType"`
+	DbConnString string `json:"dbConnString"`
+}
+
 type storage struct {
 	db *gorm.DB
 }
@@ -23,9 +29,9 @@ func open(dbType string, dbConnString string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func migrate(db *gorm.DB) {
-	db.AutoMigrate(&model.TradeMarkInfo{})
-}
+// func migrate(db *gorm.DB) {
+// 	db.AutoMigrate(&model.TradeMarkInfo{})
+// }
 
 func NewStorage(config StorageConfig) (types.Storage, error) {
 	db, err := open(config.DbType, config.DbConnString)

@@ -1,13 +1,14 @@
 package model
 
-import "time"
+import "github.com/jinzhu/gorm"
 
 type TradeMarkInfo struct {
-	ID        int64 `gorm:"primary_key"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time
-	// XMLName            xml.Name   `xml:"TradeMarkInfo"`
+	// ID        int64 `gorm:"primary_key,AUTO_INCREMENT"`
+	// CreatedAt time.Time
+	// UpdatedAt time.Time
+	// DeletedAt *time.Time
+	gorm.Model
+
 	SerialNumber       TrimString `xml:"SerialNumber"`
 	ApplicationNumber  TrimString `xml:"ApplicationNumber" gorm:"unique;not null"`
 	AppReferenceNumber TrimString `xml:"AppReferenceNumber"`

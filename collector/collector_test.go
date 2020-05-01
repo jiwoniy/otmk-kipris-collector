@@ -1,134 +1,159 @@
 package collector
 
 import (
+	"fmt"
 	"testing"
 
-	"kipris-collector/parser"
+	"kipris-collector/model"
+	"kipris-collector/types"
+
+	"github.com/stretchr/testify/suite"
 )
+
+type CollectorTestSuite struct {
+	suite.Suite
+	collector types.Collector
+}
+
+func (suite *CollectorTestSuite) SetupTest() {
+	config := collectorConfig{
+		Endpoint:   "http://plus.kipris.or.kr/openapi/rest",
+		AccessKey:  "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
+		ListenAddr: ":8082",
+	}
+
+	collector, _ := NewCollector(config)
+	suite.collector = collector
+}
 
 type testcases struct {
 	url            string
 	params         map[string]string
-	dest           parser.Response
-	responseStatus parser.KiprisResponseStatus
+	dest           model.KiprisResponse
+	responseStatus model.KiprisResponseStatus
 }
 
-// func TestCollector(t *testing.T) {
-// 	collector, _ := New()
+func (suite *CollectorTestSuite) TestCollector() {
+	parserInstance := suite.collector.GetParser()
 
-// 	tests := []testcases{
-// 		{
-// 			url: "/trademarkInfoSearchService/applicationNumberSearchInfo",
-// 			params: map[string]string{
-// 				"applicationNumber": "4020200023099", // valid number
-// 				"accessKey":         collector.GetAccessKey(),
-// 			},
-// 			dest:           parser.KiprisResponse{},
-// 			responseStatus: parser.Success,
-// 		},
-// 		{
-// 			url: "/trademarkInfoSearchService/applicationNumberSearchInfo",
-// 			params: map[string]string{
-// 				"applicationNumber": "402020002309911", // invalid number
-// 				"accessKey":         collector.GetAccessKey(),
-// 			},
-// 			dest:           parser.KiprisResponse{},
-// 			responseStatus: parser.Empty,
-// 		},
-// 		{
-// 			url: "/trademarkInfoSearchService/applicationNumberSearchInfo",
-// 			params: map[string]string{
-// 				"applicationNumber": "", // invalid number
-// 				"accessKey":         collector.GetAccessKey(),
-// 			},
-// 			dest:           parser.KiprisResponse{},
-// 			responseStatus: parser.Error,
-// 		},
-// 		{
-// 			url: "/trademarkInfoSearchService/applicationNumberSearchInfo",
-// 			params: map[string]string{
-// 				"applicationNumber": "4020200023099", // valid number
-// 				"accessKey":         "",
-// 			},
-// 			dest:           parser.KiprisResponse{},
-// 			responseStatus: parser.Error,
-// 		},
+	tests := []testcases{
+		{
+			url: "/trademarkInfoSearchService/applicationNumberSearchInfo",
+			params: map[string]string{
+				"applicationNumber": "4020200023099", // valid number
+				"accessKey":         suite.collector.GetAccessKey(),
+			},
+			dest:           model.KiprisResponse{},
+			responseStatus: model.Success,
+		},
+		{
+			url: "/trademarkInfoSearchService/applicationNumberSearchInfo",
+			params: map[string]string{
+				"applicationNumber": "402020002309911", // invalid number
+				"accessKey":         suite.collector.GetAccessKey(),
+			},
+			dest:           model.KiprisResponse{},
+			responseStatus: model.Empty,
+		},
+		{
+			url: "/trademarkInfoSearchService/applicationNumberSearchInfo",
+			params: map[string]string{
+				"applicationNumber": "", // invalid number
+				"accessKey":         suite.collector.GetAccessKey(),
+			},
+			dest:           model.KiprisResponse{},
+			responseStatus: model.Error,
+		},
+		{
+			url: "/trademarkInfoSearchService/applicationNumberSearchInfo",
+			params: map[string]string{
+				"applicationNumber": "4020200023099", // valid number
+				"accessKey":         "",
+			},
+			dest:           model.KiprisResponse{},
+			responseStatus: model.Error,
+		},
 
-// 		{
-// 			url: "/trademarkInfoSearchService/trademarkDesignationGoodstInfo",
-// 			params: map[string]string{
-// 				"applicationNumber": "4020200023099", // valid number
-// 				"accessKey":         collector.GetAccessKey(),
-// 			},
-// 			dest:           parser.KiprisResponse{},
-// 			responseStatus: parser.Success,
-// 		},
-// 		{
-// 			url: "/trademarkInfoSearchService/trademarkDesignationGoodstInfo",
-// 			params: map[string]string{
-// 				"applicationNumber": "402020002309911", // invalid number
-// 				"accessKey":         collector.GetAccessKey(),
-// 			},
-// 			dest:           parser.KiprisResponse{},
-// 			responseStatus: parser.Empty,
-// 		},
-// 		{
-// 			url: "/trademarkInfoSearchService/trademarkDesignationGoodstInfo",
-// 			params: map[string]string{
-// 				"applicationNumber": "", // invalid number
-// 				"accessKey":         collector.GetAccessKey(),
-// 			},
-// 			dest:           parser.KiprisResponse{},
-// 			responseStatus: parser.Error,
-// 		},
-// 		{
-// 			url: "/trademarkInfoSearchService/trademarkDesignationGoodstInfo",
-// 			params: map[string]string{
-// 				"applicationNumber": "4020200023099", // valid number
-// 				"accessKey":         "",
-// 			},
-// 			dest:           parser.KiprisResponse{},
-// 			responseStatus: parser.Error,
-// 		},
-// 	}
+		{
+			url: "/trademarkInfoSearchService/trademarkDesignationGoodstInfo",
+			params: map[string]string{
+				"applicationNumber": "4020200023099", // valid number
+				"accessKey":         suite.collector.GetAccessKey(),
+			},
+			dest:           model.KiprisResponse{},
+			responseStatus: model.Success,
+		},
+		{
+			url: "/trademarkInfoSearchService/trademarkDesignationGoodstInfo",
+			params: map[string]string{
+				"applicationNumber": "402020002309911", // invalid number
+				"accessKey":         suite.collector.GetAccessKey(),
+			},
+			dest:           model.KiprisResponse{},
+			responseStatus: model.Empty,
+		},
+		{
+			url: "/trademarkInfoSearchService/trademarkDesignationGoodstInfo",
+			params: map[string]string{
+				"applicationNumber": "", // invalid number
+				"accessKey":         suite.collector.GetAccessKey(),
+			},
+			dest:           model.KiprisResponse{},
+			responseStatus: model.Error,
+		},
+		{
+			url: "/trademarkInfoSearchService/trademarkDesignationGoodstInfo",
+			params: map[string]string{
+				"applicationNumber": "4020200023099", // valid number
+				"accessKey":         "",
+			},
+			dest:           model.KiprisResponse{},
+			responseStatus: model.Error,
+		},
+	}
 
-// 	for testIndex, tc := range tests {
-// 		err := collector.Get(tc.url, tc.params, &tc.dest)
-// 		if err != nil {
-// 			t.Error(err)
-// 		}
-// 		if tc.dest.Result() != tc.responseStatus {
-// 			t.Errorf(fmt.Sprintf("This test index fail %d", testIndex))
-// 		}
-// 	}
-// }
+	for testIndex, tc := range tests {
+		content, err := suite.collector.Get(tc.url, tc.params)
 
-func TestRealCollector(t *testing.T) {
-	collector, _ := New()
+		// suite.Equal(nil, suite.VariableThatShouldStartAtFive)
+		if err != nil {
+			suite.Error(err)
+		}
 
+		parserInstance.Parse(content, &tc.dest)
+
+		if tc.dest.Result() != tc.responseStatus {
+			suite.Error(fmt.Errorf("This test index fail %d", testIndex))
+		}
+	}
+}
+
+func (suite *CollectorTestSuite) TestRealCollector() {
 	params := map[string]string{
 		"applicationNumber": "4020200000002", // valid number
-		"accessKey":         collector.GetAccessKey(),
+		"accessKey":         suite.collector.GetAccessKey(),
 	}
 
-	// dat := parserTypes.KiprisResponse{}
-
-	content, err := collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
+	content, err := suite.collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
 	if err != nil {
-		t.Error(err)
+		suite.Error(err)
 	}
 
-	var data parser.Response
+	var data model.KiprisResponse
 
-	parseInstance := collector.GetParser()
+	parseInstance := suite.collector.GetParser()
 	parseInstance.Parse(content, &data)
 
-	storage := collector.GetStorage()
+	storage := suite.collector.GetStorage()
 
 	storage.Create(&data.Body.Items.TradeMarkInfo)
 
 	// ddd := data.(model.TradeMarkInfo)
 
 	// tradeMarkInfo := model.TradeMarkInfo(data)
-	// storage.Create(&dest)
+	// 	// storage.Create(&dest)
+}
+
+func TestCollectorSuite(t *testing.T) {
+	suite.Run(t, new(CollectorTestSuite))
 }

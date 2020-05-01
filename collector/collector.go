@@ -5,7 +5,6 @@ import (
 	"kipris-collector/storage"
 	"kipris-collector/types"
 	"kipris-collector/utils"
-	// "kipris-collector/storage"
 )
 
 type kiprisCollector struct {
