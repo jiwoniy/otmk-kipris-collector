@@ -1,5 +1,7 @@
 package types
 
+import "kipris-collector/model"
+
 type Parser interface {
 	Read(filename string) ([]byte, error)
 	Print(v interface{})
@@ -22,6 +24,8 @@ type Collector interface {
 type Storage interface {
 	CloseDB()
 	Create(v Model) error
+	GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkInfo)
+	GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *model.TrademarkDesignationGoodstInfo)
 }
 
 type Model interface {

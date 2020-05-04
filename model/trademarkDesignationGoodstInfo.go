@@ -7,9 +7,8 @@ import (
 
 // `TrademarkDesignationGoodstInfo` belongs to `TradmarkInfo`is the foreign key
 type TrademarkDesignationGoodstInfo struct {
-	// XMLName                                       xml.Name   `xml:"trademarkDesignationGoodstInfo"`
 	gorm.Model
-
+	// XMLName                                       xml.Name   `xml:"trademarkDesignationGoodstInfo"`
 	ApplicationNumber                             string     `gorm:"association_foreignkey:ApplicationNumber;not null;" validate:"required"` // use Refer as association foreign ke
 	DesignationGoodsSerialNumber                  TrimString `xml:"DesignationGoodsSerialNumber,omitempty" gorm:"not null;index;" validate:"required"`
 	DesignationGoodsClassificationInformationCode TrimString `xml:"DesignationGoodsClassificationInformationCode,omitempty" gorm:"not null;index;" validate:"required"`

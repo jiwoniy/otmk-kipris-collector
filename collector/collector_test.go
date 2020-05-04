@@ -17,12 +17,17 @@ type CollectorTestSuite struct {
 
 func (suite *CollectorTestSuite) SetupTest() {
 	config := collectorConfig{
-		Endpoint:   "http://plus.kipris.or.kr/openapi/rest",
-		AccessKey:  "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
-		ListenAddr: ":8082",
+		Endpoint:     "http://plus.kipris.or.kr/openapi/rest",
+		AccessKey:    "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
+		ListenAddr:   ":8082",
+		DbType:       "sqlite3",
+		DbConnString: "./test.db",
 	}
 
-	collector, _ := NewCollector(config)
+	collector, err := NewCollector(config)
+	if err != nil {
+		suite.Error(err)
+	}
 	suite.collector = collector
 }
 
@@ -132,24 +137,40 @@ func (suite *CollectorTestSuite) TestRealCollector() {
 		"accessKey":         suite.collector.GetAccessKey(),
 	}
 
+	parseInstance := suite.collector.GetParser()
+	storage := suite.collector.GetStorage()
+
 	content, err := suite.collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
 	if err != nil {
 		suite.Error(err)
 	}
 
-	var data model.KiprisResponse
+	var data1 model.KiprisResponse
+	parseInstance.Parse(content, &data1)
 
-	parseInstance := suite.collector.GetParser()
-	parseInstance.Parse(content, &data)
+	storage.Create(&data1.Body.Items.TradeMarkInfo)
 
-	storage := suite.collector.GetStorage()
+	content, err = suite.collector.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
+	if err != nil {
+		suite.Error(err)
+	}
 
-	storage.Create(&data.Body.Items.TradeMarkInfo)
+	var data2 model.KiprisResponse
+	parseInstance.Parse(content, &data2)
 
-	// ddd := data.(model.TradeMarkInfo)
+	for _, good := range data2.Body.Items.TrademarkDesignationGoodstInfo {
+		fmt.Println(good)
+		good.ApplicationNumber = "4020200000002"
+		err := storage.Create(&good)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 
-	// tradeMarkInfo := model.TradeMarkInfo(data)
-	// 	// storage.Create(&dest)
+	// var result model.TradeMarkInfo
+	// storage.GetTradeMarkInfo(data.Body.Items.TradeMarkInfo, &result)
+	// fmt.Println(result)
+
 }
 
 func TestCollectorSuite(t *testing.T) {

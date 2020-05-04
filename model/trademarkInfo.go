@@ -6,15 +6,12 @@ import (
 )
 
 type TradeMarkInfo struct {
-	// ID        int64 `gorm:"primary_key,AUTO_INCREMENT"`
-	// CreatedAt time.Time
-	// UpdatedAt time.Time
-	// DeletedAt *time.Time
 	gorm.Model
 
-	SerialNumber       TrimString `xml:"SerialNumber"`
-	ApplicationNumber  string     `xml:"ApplicationNumber" gorm:"unique;not null" validate:"required"`
-	AppReferenceNumber TrimString `xml:"AppReferenceNumber"`
+	SerialNumber TrimString `xml:"SerialNumber"`
+
+	ApplicationNumber  string     `xml:"ApplicationNumber" gorm:"application_number;unique;not null" validate:"required"`
+	AppReferenceNumber TrimString `xml:"AppReferenceNumber" gorm:"app_reference_number"`
 	ApplicationDate    TrimString `xml:"ApplicationDate"`
 	PublicNumber       TrimString `xml:"PublicNumber"`
 
@@ -74,22 +71,4 @@ func (data *TradeMarkInfo) Valid() bool {
 	return true
 }
 
-type Items struct {
-	// XMLName                        xml.Name                         `xml:"items"`
-	TrademarkDesignationGoodstInfo []TrademarkDesignationGoodstInfo `xml:"trademarkDesignationGoodstInfo"`
-	TradeMarkInfo                  TradeMarkInfo                    `xml:"TradeMarkInfo"`
-	TotalSearchCount               TotalSearchCount                 `xml:"TotalSearchCount"`
-}
-
 type TotalSearchCount TrimString
-
-type Body struct {
-	// XMLName xml.Name `xml:"body"`
-	Items Items `xml:"items"`
-}
-
-type Header struct {
-	// XMLName    xml.Name `xml:"header"`
-	ResultCode TrimString `xml:"resultCode"`
-	ResultMsg  TrimString `xml:"resultMsg"`
-}

@@ -22,9 +22,13 @@ func NewCollector(config collectorConfig) (types.Collector, error) {
 	}
 
 	storage, err := storage.NewStorage(storage.StorageConfig{
-		DbType:       "sqlite3",
-		DbConnString: "./test.db",
+		DbType:       config.DbType,
+		DbConnString: config.DbConnString,
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &kiprisCollector{
 		endpt:     config.Endpoint,

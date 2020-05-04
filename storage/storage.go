@@ -40,7 +40,6 @@ func NewStorage(config StorageConfig) (types.Storage, error) {
 	}
 
 	migrate(db)
-	// db.AutoMigrate(&model.TradeMarkInfo{})
 
 	return &storage{
 		db: db,
@@ -65,4 +64,12 @@ func (s *storage) Create(v types.Model) error {
 		return errors.New(fmt.Sprintf("Fail to create data(maybe ApplicationNumber already exist) %v", v))
 	}
 	return nil
+}
+
+func (s *storage) GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkInfo) {
+	s.db.Where(&v).First(&data)
+}
+
+func (s *storage) GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *model.TrademarkDesignationGoodstInfo) {
+	s.db.Where(&v).First(&data)
 }

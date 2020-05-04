@@ -80,3 +80,21 @@ func (res *KiprisResponse) Result() KiprisResponseStatus {
 
 	return Success
 }
+
+type Items struct {
+	// XMLName                        xml.Name                         `xml:"items"`
+	TrademarkDesignationGoodstInfo []TrademarkDesignationGoodstInfo `xml:"trademarkDesignationGoodstInfo"`
+	TradeMarkInfo                  TradeMarkInfo                    `xml:"TradeMarkInfo"`
+	TotalSearchCount               TotalSearchCount                 `xml:"TotalSearchCount"`
+}
+
+type Body struct {
+	// XMLName xml.Name `xml:"body"`
+	Items Items `xml:"items"`
+}
+
+type Header struct {
+	// XMLName    xml.Name `xml:"header"`
+	ResultCode TrimString `xml:"resultCode"`
+	ResultMsg  TrimString `xml:"resultMsg"`
+}
