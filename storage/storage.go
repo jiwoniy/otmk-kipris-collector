@@ -30,7 +30,7 @@ func open(dbType string, dbConnString string) (*gorm.DB, error) {
 }
 
 func migrate(db *gorm.DB) {
-	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{})
+	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{}, &model.KiprisCollector{})
 }
 
 func NewStorage(config StorageConfig) (types.Storage, error) {

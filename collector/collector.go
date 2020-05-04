@@ -1,6 +1,8 @@
 package collector
 
 import (
+	"fmt"
+	"kipris-collector/model"
 	"kipris-collector/parser"
 	"kipris-collector/storage"
 	"kipris-collector/types"
@@ -67,4 +69,50 @@ func (c *kiprisCollector) Get(url string, params map[string]string) ([]byte, err
 	}
 
 	return body, nil
+}
+
+func (c *kiprisCollector) GetApplicationNumber(applicationNumber string) bool {
+	params := map[string]string{
+		"applicationNumber": applicationNumber,
+		"accessKey":         c.GetAccessKey(),
+	}
+	content, err := c.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
+
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	var tradeMarkInfo model.KiprisResponse
+	c.parser.Parse(content, &tradeMarkInfo)
+	// fmt.Println(tradeMarkInfo.Result())
+	c.storage.Create(&tradeMarkInfo.Body.Items.TradeMarkInfo)
+
+	content, err = c.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+
+	var trademarkDesignationGoodstInfo model.KiprisResponse
+	c.parser.Parse(content, &trademarkDesignationGoodstInfo)
+
+	// fmt.Println(trademarkDesignationGoodstInfo.Result())
+
+	for _, good := range trademarkDesignationGoodstInfo.Body.Items.TrademarkDesignationGoodstInfo {
+		good.ApplicationNumber = applicationNumber
+		err := c.storage.Create(&good)
+		if err != nil {
+			fmt.Println(err)
+			return false
+		}
+	}
+
+	statistic := model.KiprisCollector{
+		ApplicationNumber: applicationNumber,
+		Status:            1,
+		// Status:            tradeMarkInfo.Result() && trademarkDesignationGoodstInfo.Result(),
+	}
+	c.storage.Create(&statistic)
+	return true
 }

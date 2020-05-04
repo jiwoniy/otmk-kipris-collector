@@ -19,6 +19,7 @@ type Collector interface {
 	GetParser() Parser
 	GetStorage() Storage
 	Get(url string, params map[string]string) ([]byte, error)
+	GetApplicationNumber(applicationNumber string) bool
 }
 
 type Storage interface {

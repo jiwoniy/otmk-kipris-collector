@@ -131,46 +131,47 @@ func (suite *CollectorTestSuite) TestCollector() {
 	}
 }
 
-func (suite *CollectorTestSuite) TestRealCollector() {
-	params := map[string]string{
-		"applicationNumber": "4020200000002", // valid number
-		"accessKey":         suite.collector.GetAccessKey(),
-	}
+// func (suite *CollectorTestSuite) TestRealCollector() {
+// 	params := map[string]string{
+// 		"applicationNumber": "4020200000002", // valid number
+// 		"accessKey":         suite.collector.GetAccessKey(),
+// 	}
 
-	parseInstance := suite.collector.GetParser()
-	storage := suite.collector.GetStorage()
+// 	parseInstance := suite.collector.GetParser()
+// 	storage := suite.collector.GetStorage()
 
-	content, err := suite.collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
-	if err != nil {
-		suite.Error(err)
-	}
+// 	content, err := suite.collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
+// 	if err != nil {
+// 		suite.Error(err)
+// 	}
 
-	var data1 model.KiprisResponse
-	parseInstance.Parse(content, &data1)
+// 	var data1 model.KiprisResponse
+// 	parseInstance.Parse(content, &data1)
 
-	storage.Create(&data1.Body.Items.TradeMarkInfo)
+// 	storage.Create(&data1.Body.Items.TradeMarkInfo)
 
-	content, err = suite.collector.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
-	if err != nil {
-		suite.Error(err)
-	}
+// 	content, err = suite.collector.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
+// 	if err != nil {
+// 		suite.Error(err)
+// 	}
 
-	var data2 model.KiprisResponse
-	parseInstance.Parse(content, &data2)
+// 	var data2 model.KiprisResponse
+// 	parseInstance.Parse(content, &data2)
 
-	for _, good := range data2.Body.Items.TrademarkDesignationGoodstInfo {
-		fmt.Println(good)
-		good.ApplicationNumber = "4020200000002"
-		err := storage.Create(&good)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
+// 	for _, good := range data2.Body.Items.TrademarkDesignationGoodstInfo {
+// 		good.ApplicationNumber = "4020200000002"
+// 		err := storage.Create(&good)
+// 		if err != nil {
+// 			suite.Error(err)
+// 		}
+// 	}
 
-	// var result model.TradeMarkInfo
-	// storage.GetTradeMarkInfo(data.Body.Items.TradeMarkInfo, &result)
-	// fmt.Println(result)
+// 	// TODO
+// }
 
+func (suite *CollectorTestSuite) TestKiprisCollector() {
+	result := suite.collector.GetApplicationNumber("4020200000005")
+	fmt.Println(result)
 }
 
 func TestCollectorSuite(t *testing.T) {
