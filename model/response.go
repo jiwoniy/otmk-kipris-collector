@@ -2,9 +2,12 @@ package model
 
 import (
 	"encoding/xml"
-	"fmt"
+
+	// "fmt"
 	"reflect"
 	"strings"
+
+	"github.com/go-playground/validator"
 )
 
 type KiprisResponseStatus int
@@ -17,15 +20,7 @@ const (
 
 type TrimString string
 
-// func (a Animal) String() string {
-// 	return fmt.Sprintf("%v (%d)", a.Name, a.Age)
-// }
-
-func (str *TrimString) String() string {
-	fmt.Println("-----")
-	fmt.Println(*str)
-	return fmt.Sprintf("%s", *str)
-}
+var validate *validator.Validate
 
 // custom xml string for whitespace trim
 func (str *TrimString) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
@@ -38,6 +33,13 @@ func (str *TrimString) UnmarshalXML(d *xml.Decoder, start xml.StartElement) erro
 	*str = TrimString(trimStr)
 
 	return nil
+}
+
+func (str TrimString) Valid() bool {
+	if len(str) < 1 {
+		return false
+	}
+	return true
 }
 
 type KiprisResponse struct {

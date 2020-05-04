@@ -114,8 +114,6 @@ func (suite *CollectorTestSuite) TestCollector() {
 
 	for testIndex, tc := range tests {
 		content, err := suite.collector.Get(tc.url, tc.params)
-
-		// suite.Equal(nil, suite.VariableThatShouldStartAtFive)
 		if err != nil {
 			suite.Error(err)
 		}

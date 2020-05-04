@@ -21,5 +21,9 @@ type Collector interface {
 
 type Storage interface {
 	CloseDB()
-	Create(v interface{}) error
+	Create(v Model) error
+}
+
+type Model interface {
+	Valid() bool
 }

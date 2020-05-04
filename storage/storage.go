@@ -29,9 +29,9 @@ func open(dbType string, dbConnString string) (*gorm.DB, error) {
 	return db, nil
 }
 
-// func migrate(db *gorm.DB) {
-// 	db.AutoMigrate(&model.TradeMarkInfo{})
-// }
+func migrate(db *gorm.DB) {
+	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{})
+}
 
 func NewStorage(config StorageConfig) (types.Storage, error) {
 	db, err := open(config.DbType, config.DbConnString)
@@ -39,7 +39,8 @@ func NewStorage(config StorageConfig) (types.Storage, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&model.TradeMarkInfo{})
+	migrate(db)
+	// db.AutoMigrate(&model.TradeMarkInfo{})
 
 	return &storage{
 		db: db,
@@ -50,7 +51,10 @@ func (s *storage) CloseDB() {
 	s.db.Close()
 }
 
-func (s *storage) Create(v interface{}) error {
+func (s *storage) Create(v types.Model) error {
+	if v.Valid() == false {
+		return errors.New(fmt.Sprintf("Not a valid struct %v", v))
+	}
 	if isCheck := s.db.NewRecord(v); isCheck == false {
 		return errors.New(fmt.Sprintf("Can not create %v", v))
 	}
