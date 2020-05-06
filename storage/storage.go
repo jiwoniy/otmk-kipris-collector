@@ -66,6 +66,10 @@ func (s *storage) Create(v types.Model) error {
 	return nil
 }
 
+func (s *storage) GetKiprisApplicationNumber(v model.KiprisCollector, data *model.KiprisCollector) {
+	s.db.Where(&v).First(&data)
+}
+
 func (s *storage) GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkInfo) {
 	s.db.Where(&v).First(&data)
 }

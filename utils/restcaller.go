@@ -34,7 +34,7 @@ func BuildRESTCaller(root string) *RESTCallerBuilder {
 		root: root,
 		// respType: "json",
 		respType: "text/xml; charset=utf-8",
-		timeout:  "3s",
+		timeout:  "10s",
 	}
 }
 

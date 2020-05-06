@@ -13,7 +13,7 @@ import (
 type KiprisResponseStatus int
 
 const (
-	Error KiprisResponseStatus = iota
+	Error KiprisResponseStatus = iota + 1
 	Success
 	Empty
 )

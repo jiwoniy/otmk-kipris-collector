@@ -1,10 +1,8 @@
 package collector
 
 import (
-	"fmt"
 	"testing"
 
-	"kipris-collector/model"
 	"kipris-collector/types"
 
 	"github.com/stretchr/testify/suite"
@@ -132,69 +130,15 @@ func (suite *CollectorTestSuite) SetupTest() {
 
 func (suite *CollectorTestSuite) TestRealCollector() {
 	applicationNumberList := suite.collector.CreateApplicationNumberList()
-	fmt.Println(applicationNumberList)
-
-	parseInstance := suite.collector.GetParser()
-	storage := suite.collector.GetStorage()
 
 	for _, applicationNumber := range applicationNumberList {
-		params := map[string]string{
-			"applicationNumber": applicationNumber,
-			"accessKey":         suite.collector.GetAccessKey(),
-		}
-
-		content, err := suite.collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
-		if err != nil {
-			suite.Error(err)
-		}
-
-		var data1 model.KiprisResponse
-		parseInstance.Parse(content, &data1)
-
-		storage.Create(&data1.Body.Items.TradeMarkInfo)
-
-		content, err = suite.collector.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
-		if err != nil {
-			suite.Error(err)
-		}
-
-		var data2 model.KiprisResponse
-		parseInstance.Parse(content, &data2)
-
-		for _, good := range data2.Body.Items.TrademarkDesignationGoodstInfo {
-			good.ApplicationNumber = applicationNumber
-			err := storage.Create(&good)
-			if err != nil {
-				suite.Error(err)
-			}
-		}
+		// isSuccess := suite.collector.CrawlerApplicationNumber(applicationNumber)
+		suite.collector.CrawlerApplicationNumber(applicationNumber)
+		// if isSuccess == false {
+		// 	fmt.Println("stop")
+		// 	break
+		// }
 	}
-
-	// content, err := suite.collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
-	// if err != nil {
-	// 	suite.Error(err)
-	// }
-
-	// var data1 model.KiprisResponse
-	// parseInstance.Parse(content, &data1)
-
-	// storage.Create(&data1.Body.Items.TradeMarkInfo)
-
-	// content, err = suite.collector.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
-	// if err != nil {
-	// 	suite.Error(err)
-	// }
-
-	// var data2 model.KiprisResponse
-	// parseInstance.Parse(content, &data2)
-
-	// for _, good := range data2.Body.Items.TrademarkDesignationGoodstInfo {
-	// 	good.ApplicationNumber = "4020200000002"
-	// 	err := storage.Create(&good)
-	// 	if err != nil {
-	// 		suite.Error(err)
-	// 	}
-	// }
 }
 
 // func (suite *CollectorTestSuite) TestFindApplicationNumberLogic() {

@@ -14,7 +14,7 @@ type Collector interface {
 	GetParser() Parser
 	GetStorage() Storage
 	Get(url string, params map[string]string) ([]byte, error)
-	GetApplicationNumber(applicationNumber string) bool
+	CrawlerApplicationNumber(applicationNumber string) bool
 
 	CreateApplicationNumberList() []string
 	CreateApplicationNumber(productCode string, year string, serialNumber int) string
@@ -28,6 +28,7 @@ type Collector interface {
 type Storage interface {
 	CloseDB()
 	Create(v Model) error
+	GetKiprisApplicationNumber(v model.KiprisCollector, data *model.KiprisCollector)
 	GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkInfo)
 	GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *model.TrademarkDesignationGoodstInfo)
 }

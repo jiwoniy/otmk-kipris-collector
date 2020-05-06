@@ -236,3 +236,59 @@ func TestTrademarkDesignationGoodstInfo(t *testing.T) {
 		}
 	}
 }
+
+func TestKiprisCollector(t *testing.T) {
+	storageConfig := StorageConfig{
+		DbType:       "sqlite3",
+		DbConnString: ":memory:",
+	}
+
+	storage, err := NewStorage(storageConfig)
+	if err != nil {
+		t.Error(err)
+	}
+
+	type testcases struct {
+		data    model.KiprisCollector
+		result  model.KiprisCollector
+		success bool
+	}
+
+	tests := []testcases{
+		{
+			data: model.KiprisCollector{
+				ApplicationNumber:                  "402020000001",
+				TradeMarkInfoStatus:                model.Success,
+				TradeMarkDesignationGoodInfoStatus: model.Success,
+			},
+			result:  model.KiprisCollector{},
+			success: true,
+		},
+		{
+			data: model.KiprisCollector{
+				ApplicationNumber:                  "402020000002",
+				TradeMarkInfoStatus:                model.Error,
+				TradeMarkDesignationGoodInfoStatus: model.Error,
+			},
+			result:  model.KiprisCollector{},
+			success: true,
+		},
+		{
+			data: model.KiprisCollector{
+				ApplicationNumber:                  "402020000003",
+				TradeMarkInfoStatus:                model.Empty,
+				TradeMarkDesignationGoodInfoStatus: model.Empty,
+			},
+			result:  model.KiprisCollector{},
+			success: true,
+		},
+	}
+
+	for tcIndex, tc := range tests {
+		err = storage.Create(&tc.data)
+		// storage.GetKiprisApplicationNumber(tc.data, &tc.result)
+		if tc.success == true && err != nil {
+			t.Errorf("testcase %d error: %s", tcIndex+1, err)
+		}
+	}
+}
