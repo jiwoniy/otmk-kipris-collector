@@ -31,16 +31,15 @@ func (suite *CollectorTestSuite) SetupTest() {
 	suite.collector = collector
 }
 
-type testcases struct {
-	url            string
-	params         map[string]string
-	dest           model.KiprisResponse
-	responseStatus model.KiprisResponseStatus
-}
-
 func (suite *CollectorTestSuite) TestCollector() {
 	parserInstance := suite.collector.GetParser()
 
+	type testcases struct {
+		url            string
+		params         map[string]string
+		dest           model.KiprisResponse
+		responseStatus model.KiprisResponseStatus
+	}
 	tests := []testcases{
 		{
 			url: "/trademarkInfoSearchService/applicationNumberSearchInfo",
@@ -131,48 +130,226 @@ func (suite *CollectorTestSuite) TestCollector() {
 	}
 }
 
-// func (suite *CollectorTestSuite) TestRealCollector() {
-// 	params := map[string]string{
-// 		"applicationNumber": "4020200000002", // valid number
-// 		"accessKey":         suite.collector.GetAccessKey(),
-// 	}
+func (suite *CollectorTestSuite) TestRealCollector() {
+	params := map[string]string{
+		"applicationNumber": "4020200000002", // valid number
+		"accessKey":         suite.collector.GetAccessKey(),
+	}
 
-// 	parseInstance := suite.collector.GetParser()
-// 	storage := suite.collector.GetStorage()
+	parseInstance := suite.collector.GetParser()
+	storage := suite.collector.GetStorage()
 
-// 	content, err := suite.collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
-// 	if err != nil {
-// 		suite.Error(err)
-// 	}
+	content, err := suite.collector.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
+	if err != nil {
+		suite.Error(err)
+	}
 
-// 	var data1 model.KiprisResponse
-// 	parseInstance.Parse(content, &data1)
+	var data1 model.KiprisResponse
+	parseInstance.Parse(content, &data1)
 
-// 	storage.Create(&data1.Body.Items.TradeMarkInfo)
+	storage.Create(&data1.Body.Items.TradeMarkInfo)
 
-// 	content, err = suite.collector.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
-// 	if err != nil {
-// 		suite.Error(err)
-// 	}
+	content, err = suite.collector.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
+	if err != nil {
+		suite.Error(err)
+	}
 
-// 	var data2 model.KiprisResponse
-// 	parseInstance.Parse(content, &data2)
+	var data2 model.KiprisResponse
+	parseInstance.Parse(content, &data2)
 
-// 	for _, good := range data2.Body.Items.TrademarkDesignationGoodstInfo {
-// 		good.ApplicationNumber = "4020200000002"
-// 		err := storage.Create(&good)
-// 		if err != nil {
-// 			suite.Error(err)
-// 		}
-// 	}
+	for _, good := range data2.Body.Items.TrademarkDesignationGoodstInfo {
+		good.ApplicationNumber = "4020200000002"
+		err := storage.Create(&good)
+		if err != nil {
+			suite.Error(err)
+		}
+	}
+}
 
-// 	// TODO
+func (suite *CollectorTestSuite) TestFindApplicationNumberLogic() {
+	type testcases struct {
+		startNumber string
+		lastNumber  string
+		findNumber  string
+	}
+	tests := []testcases{
+		{
+			startNumber: "1",
+			lastNumber:  "300",
+			findNumber:  "275",
+		},
+		{
+			startNumber: "1",
+			lastNumber:  "300",
+			findNumber:  "70",
+		},
+		{
+			startNumber: "1",
+			lastNumber:  "300",
+			findNumber:  "1",
+		},
+		{
+			startNumber: "1",
+			lastNumber:  "300",
+			findNumber:  "299",
+		},
+		{
+			startNumber: "1",
+			lastNumber:  "300",
+			findNumber:  "300",
+		},
+	}
+
+	for _, tc := range tests {
+		isNumberExist := suite.collector.IsTestApplicationNumberExist(tc.findNumber)
+		start, last, _ := suite.collector.GetLastApplicationNumber(tc.startNumber, tc.lastNumber, isNumberExist)
+
+		for {
+			start, last, _ = suite.collector.GetLastApplicationNumber(start, last, isNumberExist)
+			if last == start {
+				break
+			}
+		}
+	}
+}
+
+func (suite *CollectorTestSuite) TestFindNumberLogic() {
+	type testcases struct {
+		input  string
+		result bool
+	}
+	isNumberExist := suite.collector.IsTestApplicationNumberExist("300")
+
+	tests := []testcases{
+		{
+			input:  "301",
+			result: false,
+		},
+		{
+			input:  "300",
+			result: true,
+		},
+		{
+			input:  "299",
+			result: true,
+		},
+		{
+			input:  "1",
+			result: true,
+		},
+		{
+			input:  "500",
+			result: false,
+		},
+	}
+
+	for _, tc := range tests {
+		isExist := isNumberExist(tc.input)
+		suite.Equal(isExist, tc.result)
+	}
+}
+
+func (suite *CollectorTestSuite) TestCollectorGetMidValue() {
+	type testMidcases struct {
+		start  int
+		last   int
+		result int
+	}
+
+	tests := []testMidcases{
+		{
+			start:  1,
+			last:   9999999,
+			result: 5000000,
+		},
+		{
+			start:  1,
+			last:   10,
+			result: 5,
+		},
+		{
+			start:  2,
+			last:   10,
+			result: 6,
+		},
+		{
+			start:  3,
+			last:   10,
+			result: 6, // (10 - 3) / 2 + 3 => 6.5 => 버림 => 6
+		},
+		{
+			start:  3,
+			last:   11,
+			result: 7,
+		},
+		{
+			start:  250,
+			last:   500,
+			result: 375,
+		},
+		{
+			start:  250,
+			last:   499,
+			result: 374,
+		},
+		{
+			start:  150,
+			last:   225,
+			result: 187,
+		},
+	}
+
+	for _, tc := range tests {
+		mid := suite.collector.GetMidValue(tc.start, tc.last)
+		suite.Equal(mid, tc.result)
+	}
+}
+
+// func (suite *CollectorTestSuite) TestKiprisCollector() {
+// 	result := suite.collector.GetApplicationNumber("4020200000005")
+// 	fmt.Println(result)
 // }
 
-func (suite *CollectorTestSuite) TestKiprisCollector() {
-	result := suite.collector.GetApplicationNumber("4020200000005")
-	fmt.Println(result)
-}
+// func (suite *CollectorTestSuite) TestGetLastApplicationNumber() {
+// result1 := suite.collector.GetApplicationNumber("4020200000001")
+// result2 := suite.collector.GetApplicationNumber("4020209999999")
+// fmt.Println(result1)
+// fmt.Println(result2)
+
+// floor
+// ceil
+
+// 00-0000-0000001
+// 00-0000-9999999
+// }
+
+// func (suite *CollectorTestSuite) TestApplicationNumberParsing() {
+
+// last, _ := strconv.ParseFloat("4020209999999", 32)
+// fmt.Println(last)
+// fmt.Println(last / 2)
+// fmt.Println(math.Ceil(last / 2))
+
+// startNumber := "4020200000001"
+// lastNumber := "4020209999999"
+// _, err := suite.collector.GetLastApplicationNumber(startNumber, lastNumber)
+
+// if err != nil {
+// 	suite.Error(err)
+// }
+
+// fmt.Println(lastNumber)
+// result1 := suite.collector.GetApplicationNumber("4020200000001")
+// result2 := suite.collector.GetApplicationNumber("4020209999999")
+// fmt.Println(result1)
+// fmt.Println(result2)
+
+// floor
+// ceil
+
+// 00-0000-0000001
+// 00-0000-9999999
+// }
 
 func TestCollectorSuite(t *testing.T) {
 	suite.Run(t, new(CollectorTestSuite))

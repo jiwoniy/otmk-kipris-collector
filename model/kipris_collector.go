@@ -7,8 +7,8 @@ import (
 
 type KiprisCollector struct {
 	gorm.Model
-	ApplicationNumber string `gorm:"unique;not null;" validate:"required"`
-	Status            int    `validate:"required"`
+	ApplicationNumber string               `gorm:"unique;not null;" validate:"required"`
+	Status            KiprisResponseStatus `validate:"required"`
 	// Error             string
 }
 

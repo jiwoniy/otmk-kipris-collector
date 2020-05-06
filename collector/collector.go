@@ -7,6 +7,7 @@ import (
 	"kipris-collector/storage"
 	"kipris-collector/types"
 	"kipris-collector/utils"
+	"strconv"
 )
 
 type kiprisCollector struct {
@@ -108,11 +109,84 @@ func (c *kiprisCollector) GetApplicationNumber(applicationNumber string) bool {
 		}
 	}
 
+	res := trademarkDesignationGoodstInfo.Result()
+	// TODO
 	statistic := model.KiprisCollector{
 		ApplicationNumber: applicationNumber,
-		Status:            1,
+		Status:            res,
 		// Status:            tradeMarkInfo.Result() && trademarkDesignationGoodstInfo.Result(),
 	}
 	c.storage.Create(&statistic)
 	return true
+}
+
+func (c *kiprisCollector) GetLastApplicationNumber(startNumber string, lastNumber string, checker func(string) bool) (string, string, error) {
+	start, err := strconv.Atoi(startNumber)
+	last, err := strconv.Atoi(lastNumber)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	if start >= last {
+		return "", "", fmt.Errorf("uncorrect %d, %d", start, last)
+	}
+
+	mid := c.GetMidValue(start, last)
+
+	midNumber := strconv.Itoa(mid)
+
+	if mid == start {
+		return startNumber, startNumber, nil
+	} else if mid == last {
+		return lastNumber, lastNumber, nil
+	}
+
+	isExist := checker(strconv.Itoa(mid))
+
+	if isExist {
+		return midNumber, lastNumber, nil
+	}
+
+	return startNumber, midNumber, nil
+}
+
+func (c *kiprisCollector) GetMidValue(startNumber int, lastNumber int) int {
+	// startNumber, lastNumber가 int 형이기 때문에
+	// (lastNumber-startNumber)/2의 값은 버림처리가 된다.
+	mid := (lastNumber-startNumber)/2 + startNumber
+	return mid
+}
+
+func (c *kiprisCollector) isApplicationNumberExist(applicationNumber string) bool {
+	params := map[string]string{
+		"applicationNumber": applicationNumber,
+		"accessKey":         c.GetAccessKey(),
+	}
+	content, err := c.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
+
+	if err != nil {
+		return false
+	}
+
+	var tradeMarkInfo model.KiprisResponse
+	c.parser.Parse(content, &tradeMarkInfo)
+	if tradeMarkInfo.Result() == model.Success {
+		return true
+	}
+
+	return false
+}
+
+// for test
+func (c *kiprisCollector) IsTestApplicationNumberExist(answer string) func(string) bool {
+	answerNumber, _ := strconv.Atoi(answer)
+	return func(applicationNumber string) bool {
+		number, _ := strconv.Atoi(applicationNumber)
+
+		if number <= answerNumber {
+			return true
+		}
+		return false
+	}
 }

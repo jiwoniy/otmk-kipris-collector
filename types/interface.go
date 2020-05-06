@@ -20,6 +20,12 @@ type Collector interface {
 	GetStorage() Storage
 	Get(url string, params map[string]string) ([]byte, error)
 	GetApplicationNumber(applicationNumber string) bool
+
+	GetMidValue(startNumber int, lastNumber int) int
+
+	// for test
+	GetLastApplicationNumber(startNumber string, LastNumber string, checker func(string) bool) (string, string, error)
+	IsTestApplicationNumberExist(answer string) func(string) bool
 }
 
 type Storage interface {
