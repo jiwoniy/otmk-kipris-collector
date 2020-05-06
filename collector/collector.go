@@ -120,6 +120,78 @@ func (c *kiprisCollector) GetApplicationNumber(applicationNumber string) bool {
 	return true
 }
 
+func (c *kiprisCollector) isApplicationNumberExist(applicationNumber string) bool {
+	params := map[string]string{
+		"applicationNumber": applicationNumber,
+		"accessKey":         c.GetAccessKey(),
+	}
+	content, err := c.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
+
+	if err != nil {
+		return false
+	}
+
+	var tradeMarkInfo model.KiprisResponse
+	c.parser.Parse(content, &tradeMarkInfo)
+	if tradeMarkInfo.Result() == model.Success {
+		return true
+	}
+
+	return false
+}
+
+func (c *kiprisCollector) CreateApplicationNumberList() []string {
+	// 상표법 개정에 따라 서비스표(41), 상표/서비스표(45)는 2016년 9월 1일 이후 출원건에 대해 상표(40)에 통합 되었습니다.
+
+	// result := fmt.Sprintf("%s%s%07d", productCode, year, serialNumber)
+	// return result
+
+	applicationNumberList := make([]string, 0)
+
+	// productCodeList := []string{
+	// 	"40",
+	// 	"41",
+	// 	"45",
+	// }
+
+	yearList := make([]string, 0)
+	current, _ := strconv.Atoi("2020")
+	start, _ := strconv.Atoi("1950")
+
+	for i := start; i <= current; i++ {
+		yearList = append(yearList, strconv.Itoa(i))
+	}
+
+	serialNumberList := make([]string, 10)
+	for index, _ := range serialNumberList {
+		serialNumberList[index] = fmt.Sprintf("%07d", index+1)
+		applicationNumberList = append(applicationNumberList, fmt.Sprintf("%s%s%s", "40", "2020", serialNumberList[index]))
+	}
+
+	// for _, year := range yearList {
+	// 	yearNum, _ := strconv.Atoi(year)
+	// 	if yearNum > 2016 {
+	// 		//  40
+	// 	} else {
+	// 		// productCodeList
+	// 	}
+	// }
+
+	return applicationNumberList
+}
+
+func (c *kiprisCollector) CreateApplicationNumber(productCode string, year string, serialNumber int) string {
+	result := fmt.Sprintf("%s%s%07d", productCode, year, serialNumber)
+	return result
+}
+
+func (c *kiprisCollector) GetMidValue(startNumber int, lastNumber int) int {
+	// startNumber, lastNumber가 int 형이기 때문에
+	// (lastNumber-startNumber)/2의 값은 버림처리가 된다.
+	mid := (lastNumber-startNumber)/2 + startNumber
+	return mid
+}
+
 func (c *kiprisCollector) GetLastApplicationNumber(startNumber string, lastNumber string, checker func(string) bool) (string, string, error) {
 	start, err := strconv.Atoi(startNumber)
 	last, err := strconv.Atoi(lastNumber)
@@ -149,33 +221,6 @@ func (c *kiprisCollector) GetLastApplicationNumber(startNumber string, lastNumbe
 	}
 
 	return startNumber, midNumber, nil
-}
-
-func (c *kiprisCollector) GetMidValue(startNumber int, lastNumber int) int {
-	// startNumber, lastNumber가 int 형이기 때문에
-	// (lastNumber-startNumber)/2의 값은 버림처리가 된다.
-	mid := (lastNumber-startNumber)/2 + startNumber
-	return mid
-}
-
-func (c *kiprisCollector) isApplicationNumberExist(applicationNumber string) bool {
-	params := map[string]string{
-		"applicationNumber": applicationNumber,
-		"accessKey":         c.GetAccessKey(),
-	}
-	content, err := c.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
-
-	if err != nil {
-		return false
-	}
-
-	var tradeMarkInfo model.KiprisResponse
-	c.parser.Parse(content, &tradeMarkInfo)
-	if tradeMarkInfo.Result() == model.Success {
-		return true
-	}
-
-	return false
 }
 
 // for test
