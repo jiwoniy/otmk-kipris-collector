@@ -1,9 +1,10 @@
 package parser
 
 import (
-	"kipris-collector/model"
 	"reflect"
 	"testing"
+
+	"github.com/jiwoniy/otmk-kipris-collector/model"
 )
 
 type testcases struct {

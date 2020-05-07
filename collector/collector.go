@@ -2,14 +2,15 @@ package collector
 
 import (
 	"fmt"
-	"kipris-collector/model"
-	"kipris-collector/parser"
-	"kipris-collector/storage"
-	"kipris-collector/types"
-	"kipris-collector/utils"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/jiwoniy/otmk-kipris-collector/model"
+	"github.com/jiwoniy/otmk-kipris-collector/parser"
+	"github.com/jiwoniy/otmk-kipris-collector/storage"
+	"github.com/jiwoniy/otmk-kipris-collector/types"
+	"github.com/jiwoniy/otmk-kipris-collector/utils"
 )
 
 type kiprisCollector struct {
@@ -31,7 +32,7 @@ func init() {
 	collectLogger = log.New(fpLog, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
 
-func NewCollector(config collectorConfig) (types.Collector, error) {
+func NewCollector(config CollectorConfig) (types.Collector, error) {
 	parserInstance, err := parser.NewParser("xml")
 
 	if err != nil {
@@ -189,7 +190,7 @@ func (c *kiprisCollector) CreateApplicationNumberList() []string {
 		yearList = append(yearList, strconv.Itoa(i))
 	}
 
-	serialNumberList := make([]string, 100)
+	serialNumberList := make([]string, 10)
 	for index, _ := range serialNumberList {
 		serialNumberList[index] = fmt.Sprintf("%07d", index+1)
 		applicationNumberList = append(applicationNumberList, fmt.Sprintf("%s%s%s", "40", "2020", serialNumberList[index]))

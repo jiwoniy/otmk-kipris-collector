@@ -3,11 +3,13 @@ package storage
 import (
 	"errors"
 	"fmt"
-	"kipris-collector/model"
-	"kipris-collector/types"
+
+	"github.com/jiwoniy/otmk-kipris-collector/model"
+	"github.com/jiwoniy/otmk-kipris-collector/types"
 
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	// _ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 type StorageConfig struct {

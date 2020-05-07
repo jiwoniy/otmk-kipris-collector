@@ -1,4 +1,4 @@
-module kipris-collector
+module github.com/jiwoniy/otmk-kipris-collector
 
 go 1.14
 

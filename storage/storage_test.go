@@ -3,7 +3,7 @@ package storage
 import (
 	"testing"
 
-	"kipris-collector/model"
+	"github.com/jiwoniy/otmk-kipris-collector/model"
 )
 
 func TestTradeMarkInfo(t *testing.T) {

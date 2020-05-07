@@ -1,5 +1,7 @@
 package model
 
+// https://m.blog.naver.com/PostView.nhn?blogId=s0215hc&logNo=221475878207&proxyReferer=https:%2F%2Fwww.google.com%2F
+// https://blog.lael.be/post/917
 import (
 	"github.com/go-playground/validator"
 	"github.com/jinzhu/gorm"

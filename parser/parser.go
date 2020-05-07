@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"kipris-collector/types"
+	"github.com/jiwoniy/otmk-kipris-collector/types"
 )
 
 func NewParser(parserType string) (types.Parser, error) {

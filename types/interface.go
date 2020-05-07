@@ -1,6 +1,6 @@
 package types
 
-import "kipris-collector/model"
+import "github.com/jiwoniy/otmk-kipris-collector/model"
 
 type Parser interface {
 	Read(filename string) ([]byte, error)

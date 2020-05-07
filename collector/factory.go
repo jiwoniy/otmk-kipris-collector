@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"flag"
 	"io/ioutil"
-	"kipris-collector/types"
+
+	"github.com/jiwoniy/otmk-kipris-collector/types"
 )
 
-type collectorConfig struct {
+type CollectorConfig struct {
 	Endpoint     string `json:"endpoint"`
 	AccessKey    string `json:"access_key"`
 	ListenAddr   string `json:"listen_addr"`
@@ -19,7 +20,7 @@ func New() (types.Collector, error) {
 	configPath := flag.String("cfg", "./config.json", "path to the configuration file")
 	flag.Parse()
 
-	var cfg collectorConfig
+	var cfg CollectorConfig
 
 	cfgData, err := ioutil.ReadFile(*configPath)
 	if err != nil {

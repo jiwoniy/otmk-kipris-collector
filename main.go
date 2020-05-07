@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "kipris-collector/cmd"
+import "github.com/jiwoniy/otmk-kipris-collector/cmd"
 
 func main() {
 	cmd.Execute()
