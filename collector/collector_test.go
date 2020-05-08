@@ -19,7 +19,6 @@ func (suite *CollectorTestSuite) SetupTest() {
 	config := CollectorConfig{
 		Endpoint:     "http://plus.kipris.or.kr/openapi/rest",
 		AccessKey:    "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
-		ListenAddr:   ":8082",
 		DbType:       "sqlite3",
 		DbConnString: ":memory:",
 	}

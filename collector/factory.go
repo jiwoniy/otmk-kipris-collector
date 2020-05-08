@@ -9,9 +9,9 @@ import (
 )
 
 type CollectorConfig struct {
-	Endpoint     string `json:"endpoint"`
-	AccessKey    string `json:"access_key"`
-	ListenAddr   string `json:"listen_addr"`
+	Endpoint  string `json:"endpoint"`
+	AccessKey string `json:"access_key"`
+	// ListenAddr   string `json:"listen_addr"`
 	DbType       string `json:"dbType"`
 	DbConnString string `json:"DbConnString"`
 }

@@ -12,12 +12,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-type StorageConfig struct {
-	// base on gorm format
-	DbType       string `json:"dbType"`
-	DbConnString string `json:"dbConnString"`
-}
-
 type storage struct {
 	db *gorm.DB
 }
@@ -35,7 +29,7 @@ func migrate(db *gorm.DB) {
 	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{}, &model.KiprisCollector{})
 }
 
-func NewStorage(config StorageConfig) (types.Storage, error) {
+func NewStorage(config types.StorageConfig) (types.Storage, error) {
 	db, err := open(config.DbType, config.DbConnString)
 	if err != nil {
 		return nil, err
@@ -46,6 +40,10 @@ func NewStorage(config StorageConfig) (types.Storage, error) {
 	return &storage{
 		db: db,
 	}, nil
+}
+
+func (s *storage) GetDB() *gorm.DB {
+	return s.db
 }
 
 func (s *storage) CloseDB() {
@@ -76,6 +74,7 @@ func (s *storage) GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkI
 	s.db.Where(&v).First(&data)
 }
 
-func (s *storage) GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *model.TrademarkDesignationGoodstInfo) {
-	s.db.Where(&v).First(&data)
+func (s *storage) GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *[]model.TrademarkDesignationGoodstInfo) {
+	s.db.Where(&v).Find(&data)
+	// s.db.Where(&v).First(&data)
 }

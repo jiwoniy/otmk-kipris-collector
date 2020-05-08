@@ -1,12 +1,9 @@
 package types
 
-import "github.com/jiwoniy/otmk-kipris-collector/model"
-
-type Parser interface {
-	Read(filename string) ([]byte, error)
-	Print(v interface{})
-	Parse(data []byte, v interface{}) error
-}
+import (
+	"github.com/jinzhu/gorm"
+	"github.com/jiwoniy/otmk-kipris-collector/model"
+)
 
 type Collector interface {
 	GetEndpoint() string
@@ -25,12 +22,23 @@ type Collector interface {
 	IsTestApplicationNumberExist(answer string) func(string) bool
 }
 
+type Query interface {
+	GetApplicationNumber(applicationNumber string) *model.TradeMarkInfo
+}
+
+type Parser interface {
+	Read(filename string) ([]byte, error)
+	Print(v interface{})
+	Parse(data []byte, v interface{}) error
+}
+
 type Storage interface {
+	GetDB() *gorm.DB
 	CloseDB()
 	Create(v Model) error
 	GetKiprisApplicationNumber(v model.KiprisCollector, data *model.KiprisCollector)
 	GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkInfo)
-	GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *model.TrademarkDesignationGoodstInfo)
+	GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *[]model.TrademarkDesignationGoodstInfo)
 }
 
 type Model interface {

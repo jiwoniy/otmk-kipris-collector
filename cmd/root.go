@@ -21,7 +21,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jiwoniy/otmk-kipris-collector/collector"
+	"github.com/jiwoniy/otmk-kipris-collector/query"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
@@ -41,28 +41,35 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		config := collector.CollectorConfig{
-			Endpoint:  "http://plus.kipris.or.kr/openapi/rest",
-			AccessKey: "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
-			// ListenAddr: ":8082",
-			DbType:       "mysql",
-			DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
-		}
+		query.NewApp()
 
-		collector, err := collector.NewCollector(config)
-		if err != nil {
-			panic(err)
-		}
-		applicationNumberList := collector.CreateApplicationNumberList()
+		// config := types.RestConfig{
+		// 	ListenAddr: ":8082",
+		// }
+		// rest.StartApplication(config)
 
-		for _, applicationNumber := range applicationNumberList {
-			// isSuccess := suite.collector.CrawlerApplicationNumber(applicationNumber)
-			collector.CrawlerApplicationNumber(applicationNumber)
-			// if isSuccess == false {
-			// 	fmt.Println("stop")
-			// 	break
-			// }
-		}
+		// config := collector.CollectorConfig{
+		// 	Endpoint:  "http://plus.kipris.or.kr/openapi/rest",
+		// 	AccessKey: "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
+		// 	// ListenAddr: ":8082",
+		// 	DbType:       "mysql",
+		// 	DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
+		// }
+
+		// collector, err := collector.NewCollector(config)
+		// if err != nil {
+		// 	panic(err)
+		// }
+		// applicationNumberList := collector.CreateApplicationNumberList()
+
+		// for _, applicationNumber := range applicationNumberList {
+		// 	// isSuccess := suite.collector.CrawlerApplicationNumber(applicationNumber)
+		// 	collector.CrawlerApplicationNumber(applicationNumber)
+		// 	// if isSuccess == false {
+		// 	// 	fmt.Println("stop")
+		// 	// 	break
+		// 	// }
+		// }
 	},
 }
 

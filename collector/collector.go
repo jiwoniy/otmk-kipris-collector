@@ -39,7 +39,7 @@ func NewCollector(config CollectorConfig) (types.Collector, error) {
 		return nil, err
 	}
 
-	storage, err := storage.NewStorage(storage.StorageConfig{
+	storage, err := storage.NewStorage(types.StorageConfig{
 		DbType:       config.DbType,
 		DbConnString: config.DbConnString,
 	})

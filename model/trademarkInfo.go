@@ -38,6 +38,8 @@ type TradeMarkInfo struct {
 	FulltextExistFlag TrimString `xml:"FulltextExistFlag"`
 	ImagePath         TrimString `xml:"ImagePath"`
 	ThumbnailPath     TrimString `xml:"ThumbnailPath"`
+
+	TrademarkDesignationGoodstInfos []TrademarkDesignationGoodstInfo
 }
 
 func (data *TradeMarkInfo) Valid() bool {
