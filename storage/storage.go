@@ -8,8 +8,8 @@ import (
 	"github.com/jiwoniy/otmk-kipris-collector/types"
 
 	"github.com/jinzhu/gorm"
-	// _ "github.com/jinzhu/gorm/dialects/sqlite"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 type storage struct {
@@ -26,7 +26,7 @@ func open(dbType string, dbConnString string) (*gorm.DB, error) {
 }
 
 func migrate(db *gorm.DB) {
-	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{}, &model.KiprisCollector{})
+	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{}, &model.KiprisCollector{}, &model.KiprisCollectorHistory{}, &model.KiprisApplicationNumber{})
 }
 
 func NewStorage(config types.StorageConfig) (types.Storage, error) {

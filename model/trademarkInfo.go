@@ -10,36 +10,36 @@ import (
 type TradeMarkInfo struct {
 	gorm.Model
 
-	SerialNumber TrimString `xml:"SerialNumber"`
+	SerialNumber TrimString `xml:"SerialNumber" json:"serialNumber"`
 
-	ApplicationNumber  string     `xml:"ApplicationNumber" gorm:"application_number;unique;not null" validate:"required"`
-	AppReferenceNumber TrimString `xml:"AppReferenceNumber" gorm:"app_reference_number"`
-	ApplicationDate    TrimString `xml:"ApplicationDate"`
-	PublicNumber       TrimString `xml:"PublicNumber"`
+	ApplicationNumber  string     `xml:"ApplicationNumber" json:"applicationNumber" gorm:"application_number;unique;not null" validate:"required"`
+	AppReferenceNumber TrimString `xml:"AppReferenceNumber" json:"appReferenceNumber" gorm:"app_reference_number"`
+	ApplicationDate    TrimString `xml:"ApplicationDate" json:"applicationDate"`
+	PublicNumber       TrimString `xml:"PublicNumber" json:"publicNumber"`
 
-	PublicDate               TrimString `xml:"PublicDate"`
-	RegistrationPublicNumber TrimString `xml:"RegistrationPublicNumber"`
-	RegistrationPublicDate   TrimString `xml:"RegistrationPublicDate"`
-	RegistrationNumber       TrimString `xml:"RegistrationNumber"`
-	RegReferenceNumber       TrimString `xml:"RegReferenceNumber"`
+	PublicDate               TrimString `xml:"PublicDate" json:"publicDate"`
+	RegistrationPublicNumber TrimString `xml:"RegistrationPublicNumber" json:"registrationPublicNumber"`
+	RegistrationPublicDate   TrimString `xml:"RegistrationPublicDate" json:"registrationPublicDate"`
+	RegistrationNumber       TrimString `xml:"RegistrationNumber" json:"registrationNumber"`
+	RegReferenceNumber       TrimString `xml:"RegReferenceNumber" json:"regReferenceNumber"`
 
-	RegistrationDate       TrimString `xml:"RegistrationDate"`
-	PriorityClaimNumber    TrimString `xml:"PriorityClaimNumber"`
-	PriorityClaimDate      TrimString `xml:"PriorityClaimDate"`
-	ApplicationStatus      TrimString `xml:"ApplicationStatus"`
-	GoodClassificationCode TrimString `xml:"GoodClassificationCode"`
+	RegistrationDate       TrimString `xml:"RegistrationDate" json:"registrationDate"`
+	PriorityClaimNumber    TrimString `xml:"PriorityClaimNumber" json:"priorityClaimNumber"`
+	PriorityClaimDate      TrimString `xml:"PriorityClaimDate" json:"priorityClaimDate"`
+	ApplicationStatus      TrimString `xml:"ApplicationStatus" json:"applicationStatus"`
+	GoodClassificationCode TrimString `xml:"GoodClassificationCode" json:"goodClassificationCode"`
 
-	ViennaCode                  TrimString `xml:"ViennaCode"`
-	ApplicantName               TrimString `xml:"ApplicantName"`
-	AgentName                   TrimString `xml:"AgentName"`
-	RegistrationRightholderName TrimString `xml:"RegistrationRightholderName"`
-	Title                       TrimString `xml:"Title"`
+	ViennaCode                  TrimString `xml:"ViennaCode" json:"viennaCode"`
+	ApplicantName               TrimString `xml:"ApplicantName" json:"applicantName"`
+	AgentName                   TrimString `xml:"AgentName" json:"agentName"`
+	RegistrationRightholderName TrimString `xml:"RegistrationRightholderName" json:"registrationRightholderName"`
+	Title                       TrimString `xml:"Title" json:"title"`
 
-	FulltextExistFlag TrimString `xml:"FulltextExistFlag"`
-	ImagePath         TrimString `xml:"ImagePath"`
-	ThumbnailPath     TrimString `xml:"ThumbnailPath"`
+	FulltextExistFlag TrimString `xml:"FulltextExistFlag" json:"fulltextExistFlag"`
+	ImagePath         TrimString `xml:"ImagePath" json:"imagePath"`
+	ThumbnailPath     TrimString `xml:"ThumbnailPath" json:"thumbnailPath"`
 
-	TrademarkDesignationGoodstInfos []TrademarkDesignationGoodstInfo
+	TrademarkDesignationGoodstInfos []TrademarkDesignationGoodstInfo `json:"trademarkDesignationGoodstInfos"`
 }
 
 func (data *TradeMarkInfo) Valid() bool {

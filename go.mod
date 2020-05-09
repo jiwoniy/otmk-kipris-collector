@@ -23,5 +23,6 @@ require (
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
 	golang.org/x/text v0.3.2 // indirect
+	gopkg.in/go-playground/assert.v1 v1.2.1
 	gopkg.in/ini.v1 v1.55.0 // indirect
 )

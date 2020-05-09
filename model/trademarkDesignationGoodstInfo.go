@@ -9,12 +9,12 @@ import (
 type TrademarkDesignationGoodstInfo struct {
 	gorm.Model
 	// XMLName                                       xml.Name   `xml:"trademarkDesignationGoodstInfo"`
-	ApplicationNumber                             string     `gorm:"association_foreignkey:ApplicationNumber;not null;" validate:"required"` // use Refer as association foreign ke
-	DesignationGoodsSerialNumber                  TrimString `xml:"DesignationGoodsSerialNumber,omitempty" gorm:"not null;index;" validate:"required"`
-	DesignationGoodsClassificationInformationCode TrimString `xml:"DesignationGoodsClassificationInformationCode,omitempty" gorm:"not null;index;" validate:"required"`
-	SimilargroupCode                              TrimString `xml:"SimilargroupCode,omitempty" gorm:"not null;index;" validate:"required"`
-	DesignationGoodsHangeulName                   TrimString `xml:"DesignationGoodsHangeulName,omitempty" gorm:"not null;index;" validate:"required"`
-	DesignationGoodsEnglishsentenceName           TrimString `xml:"DesignationGoodsEnglishsentenceName,omitempty"`
+	ApplicationNumber                             string     `gorm:"association_foreignkey:ApplicationNumber;not null;" validate:"required" json:"-"` // use Refer as association foreign ke
+	DesignationGoodsSerialNumber                  TrimString `xml:"DesignationGoodsSerialNumber,omitempty" gorm:"not null;index;" validate:"required" json:"designationGoodsSerialNumber"`
+	DesignationGoodsClassificationInformationCode TrimString `xml:"DesignationGoodsClassificationInformationCode,omitempty" gorm:"not null;index;" validate:"required" json:"designationGoodsClassificationInformationCode"`
+	SimilargroupCode                              TrimString `xml:"SimilargroupCode,omitempty" gorm:"not null;index;" validate:"required" json:"similargroupCode"`
+	DesignationGoodsHangeulName                   TrimString `xml:"DesignationGoodsHangeulName,omitempty" gorm:"not null;index;" validate:"required" json:"designationGoodsHangeulName"`
+	DesignationGoodsEnglishsentenceName           TrimString `xml:"DesignationGoodsEnglishsentenceName,omitempty" json:"designationGoodsEnglishsentenceName"`
 }
 
 func (data *TrademarkDesignationGoodstInfo) Valid() bool {

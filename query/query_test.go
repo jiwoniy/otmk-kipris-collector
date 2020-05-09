@@ -1,6 +1,7 @@
 package query
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -42,7 +43,10 @@ func TestQuery(t *testing.T) {
 
 	data := query.GetApplicationNumber("4020200000001")
 
-	// fmt.Println(data)
+	test, err := json.Marshal(data)
+	fmt.Println(test)
+	fmt.Println(string(test))
+	fmt.Println(err)
 
 	// res := make([]*sdk.AccountResult, len(accounts))
 	// 	for i, v := range accounts {

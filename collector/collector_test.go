@@ -2,6 +2,7 @@ package collector
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/jiwoniy/otmk-kipris-collector/model"
@@ -17,10 +18,11 @@ type CollectorTestSuite struct {
 
 func (suite *CollectorTestSuite) SetupTest() {
 	config := CollectorConfig{
-		Endpoint:     "http://plus.kipris.or.kr/openapi/rest",
-		AccessKey:    "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
-		DbType:       "sqlite3",
-		DbConnString: ":memory:",
+		Endpoint:  "http://plus.kipris.or.kr/openapi/rest",
+		AccessKey: "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
+		DbType:    "sqlite3",
+		// DbConnString: ":memory:",
+		DbConnString: "./test.db",
 	}
 
 	collector, err := NewCollector(config)
@@ -129,19 +131,41 @@ func (suite *CollectorTestSuite) TestCollector() {
 	}
 }
 
-// func (suite *CollectorTestSuite) TestRealCollector() {
+// func (suite *CollectorTestSuite) TestCrawler() {
 // 	applicationNumberList := suite.collector.CreateApplicationNumberList()
+// 	var wg sync.WaitGroup
 
 // 	for _, applicationNumber := range applicationNumberList {
-// 		// isSuccess := suite.collector.CrawlerApplicationNumber(applicationNumber)
-// 		suite.collector.CrawlerApplicationNumber(applicationNumber)
-// 		// if isSuccess == false {
-// 		// 	fmt.Println("stop")
-// 		// 	break
-// 		// }
+// 		wg.Add(1)
+// 		go func(appNumber string) {
+// 			defer wg.Done()
+// 			suite.collector.CrawlerApplicationNumber(appNumber)
+// 		}(applicationNumber)
 // 	}
+// 	wg.Wait()
 // }
 
+// func (suite *CollectorTestSuite) TestCreateApplicationNumberList() {
+// 	applicationNumberList := suite.collector.CreateApplicationNumberList("2017")
+// 	fmt.Println(applicationNumberList)
+// }
+
+func (suite *CollectorTestSuite) TestTotalCreateApplicationNumberList() {
+	yearList := make([]string, 0)
+	current, _ := strconv.Atoi("2020")
+	start, _ := strconv.Atoi("1950")
+
+	for i := start; i <= current; i++ {
+		yearList = append(yearList, strconv.Itoa(i))
+	}
+
+	for _, year := range yearList {
+		applicationNumberList := suite.collector.CreateApplicationNumberList(year)
+		fmt.Println(applicationNumberList)
+	}
+}
+
+// Not used
 func (suite *CollectorTestSuite) TestFindApplicationNumberLogic() {
 	type testcases struct {
 		startNumber string
@@ -189,6 +213,7 @@ func (suite *CollectorTestSuite) TestFindApplicationNumberLogic() {
 	}
 }
 
+// Not used
 func (suite *CollectorTestSuite) TestFindNumberLogic() {
 	type testcases struct {
 		input  string
@@ -225,6 +250,7 @@ func (suite *CollectorTestSuite) TestFindNumberLogic() {
 	}
 }
 
+// Not used
 func (suite *CollectorTestSuite) TestCollectorGetMidValue() {
 	type testMidcases struct {
 		start  int

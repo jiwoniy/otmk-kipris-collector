@@ -15,9 +15,28 @@ limitations under the License.
 */
 package main
 
-import "github.com/jiwoniy/otmk-kipris-collector/cmd"
+import (
+	"github.com/jiwoniy/otmk-kipris-collector/query"
+	"github.com/jiwoniy/otmk-kipris-collector/rest"
+	"github.com/jiwoniy/otmk-kipris-collector/types"
+)
 
 func main() {
-	cmd.Execute()
-	// parse.test()
+	// cmd.Execute()
+
+	queryConfig := types.QueryConfig{
+		DbType:       "mysql",
+		DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
+	}
+
+	queryApp, err := query.NewApp(queryConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	config := types.RestConfig{
+		ListenAddr: ":8084",
+	}
+
+	rest.StartApplication(queryApp, config)
 }

@@ -13,7 +13,7 @@ type Collector interface {
 	Get(url string, params map[string]string) ([]byte, error)
 	CrawlerApplicationNumber(applicationNumber string) bool
 
-	CreateApplicationNumberList() []string
+	CreateApplicationNumberList(year string) []string
 	CreateApplicationNumber(productCode string, year string, serialNumber int) string
 
 	// for find application number. but it is useless

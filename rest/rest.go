@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 
@@ -23,26 +23,23 @@ import (
 // 	c.JSON(http.StatusOK, response)
 // }
 
-func StartApplication(app types.Query, config types.RestConfig) {
+func setupRouter(app types.Query) *gin.Engine {
 	r := gin.Default()
 
-	fmt.Println(app)
+	// Ping test
+	r.GET("/ping", func(c *gin.Context) {
+		c.String(http.StatusOK, "pong")
+	})
 
-	r.GET("ping", app.GetApplicationNumber("dd"))
-
-	// r.GET("/ping", func(c *gin.Context) {
-	// 	c.JSON(200, gin.H{
-	// 		"message": "pong",
-	// 	})
+	// r.GET("/ping2", func(c *gin.Context) {
+	// 	data := app.GetApplicationNumber("4020200000001")
+	// 	c.JSON(http.StatusOK, data)
 	// })
 
-	// CQRS
-	// command
-	// craw application number
-	// status
+	return r
+}
 
-	// query
-	// get application number
-
+func StartApplication(app types.Query, config types.RestConfig) {
+	r := setupRouter(app)
 	r.Run(config.ListenAddr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

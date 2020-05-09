@@ -21,7 +21,6 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/jiwoniy/otmk-kipris-collector/query"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
@@ -41,7 +40,21 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		query.NewApp()
+		// queryConfig := types.QueryConfig{
+		// 	DbType:       "mysql",
+		// 	DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
+		// }
+
+		// queryApp, err := query.NewApp(queryConfig)
+		// if err != nil {
+		// 	panic(err)
+		// }
+
+		// config := types.RestConfig{
+		// 	ListenAddr: ":8082",
+		// }
+
+		// rest.StartApplication(queryApp, config)
 
 		// config := types.RestConfig{
 		// 	ListenAddr: ":8082",

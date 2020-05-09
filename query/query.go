@@ -25,8 +25,6 @@ func NewApp(config types.QueryConfig) (types.Query, error) {
 	}, nil
 }
 
-// title
-// smi
 func (k *kiprisQuery) GetApplicationNumber(applicationNumber string) *model.TradeMarkInfo {
 	reqTradeMarkInfo := model.TradeMarkInfo{
 		ApplicationNumber: applicationNumber,
@@ -40,10 +38,8 @@ func (k *kiprisQuery) GetApplicationNumber(applicationNumber string) *model.Trad
 	var resTrademarkDesignationGoodstInfos []model.TrademarkDesignationGoodstInfo
 
 	k.storage.GetTradeMarkInfo(reqTradeMarkInfo, &resTradeMarkInfo)
-
 	k.storage.GetTrademarkDesignationGoodstInfo(reqTrademarkDesignationGoodstInfo, &resTrademarkDesignationGoodstInfos)
 	resTradeMarkInfo.TrademarkDesignationGoodstInfos = resTrademarkDesignationGoodstInfos
 
-	// fmt.Println(resTradeMarkInfo)
 	return &resTradeMarkInfo
 }
