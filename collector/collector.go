@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/jiwoniy/otmk-kipris-collector/model"
 	"github.com/jiwoniy/otmk-kipris-collector/parser"
@@ -87,6 +88,25 @@ func (c *kiprisCollector) Get(url string, params map[string]string) ([]byte, err
 	return body, nil
 }
 
+// product string, year string, length int, startNumber int
+func (c *kiprisCollector) StartCrawler(year string) {
+	searchResult := make([]model.KiprisApplicationNumber, 0)
+	searchData := model.KiprisApplicationNumber{
+		Year: year,
+	}
+	c.storage.GetKiprisApplicationNumberList(searchData, &searchResult)
+
+	var wg sync.WaitGroup
+	for _, application := range searchResult {
+		wg.Add(1)
+		go func(appNumber string) {
+			defer wg.Done()
+			c.CrawlerApplicationNumber(appNumber)
+		}(application.ApplicationNumber)
+	}
+	wg.Wait()
+}
+
 func (c *kiprisCollector) saveHistory(applicationNumber string, isSuccess bool, Error string) {
 	history := model.KiprisCollectorHistory{
 		ApplicationNumber: applicationNumber,
@@ -117,9 +137,14 @@ func (c *kiprisCollector) CrawlerApplicationNumber(applicationNumber string) boo
 		c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo parsing: %s", err.Error()))
 		return false
 	}
-	err = c.storage.Create(&tradeMarkInfo.Body.Items.TradeMarkInfo)
-	if err != nil {
-		c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo save: %s", err.Error()))
+	if tradeMarkInfo.Result() == model.Success {
+		err = c.storage.Create(&tradeMarkInfo.Body.Items.TradeMarkInfo)
+		if err != nil {
+			c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo save: %s", err.Error()))
+			return false
+		}
+	} else {
+		c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo data, response status is %d", tradeMarkInfo.Result()))
 		return false
 	}
 
@@ -138,14 +163,19 @@ func (c *kiprisCollector) CrawlerApplicationNumber(applicationNumber string) boo
 
 	for _, good := range trademarkDesignationGoodstInfo.Body.Items.TrademarkDesignationGoodstInfo {
 		good.ApplicationNumber = applicationNumber
-		err := c.storage.Create(&good)
-		if err != nil {
-			c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in trademarkDesignationGoodstInfo save: %s", err.Error()))
+		if trademarkDesignationGoodstInfo.Result() == model.Success {
+			err := c.storage.Create(&good)
+			if err != nil {
+				c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in trademarkDesignationGoodstInfo save: %s", err.Error()))
+				return false
+			}
+		} else {
+			c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo data, response status is %d", tradeMarkInfo.Result()))
 			return false
 		}
 	}
 
-	statistic := model.KiprisCollector{
+	statistic := model.KiprisCollectorStatus{
 		ApplicationNumber:                  applicationNumber,
 		TradeMarkInfoStatus:                tradeMarkInfo.Result(),
 		TradeMarkDesignationGoodInfoStatus: trademarkDesignationGoodstInfo.Result(),
@@ -184,18 +214,22 @@ func (c *kiprisCollector) isApplicationNumberExist(applicationNumber string) boo
 	return false
 }
 
-func getSerialNumberList(product string, year string) []string {
-	serialNumberList := make([]string, 10)
+func getSerialNumberList(product string, year string, length int, startNumber int) []int {
+	serialNumberList := make([]int, length)
+
+	startIndex := 1
+	if startNumber > 1 {
+		startIndex = startNumber
+	}
 	for index, _ := range serialNumberList {
-		serialNumberList[index] = fmt.Sprintf("%07d", index+1)
+		serialNumberList[index] = index + startIndex
 	}
 
 	return serialNumberList
 }
 
-func (c *kiprisCollector) CreateApplicationNumberList(year string) []string {
+func (c *kiprisCollector) CreateApplicationNumberList(year string, length int, startNumber int) []string {
 	// 상표법 개정에 따라 서비스표(41), 상표/서비스표(45)는 2016년 9월 1일 이후 출원건에 대해 상표(40)에 통합 되었습니다.
-
 	applicationNumberList := make([]string, 0)
 
 	productCodeList := []string{
@@ -209,21 +243,25 @@ func (c *kiprisCollector) CreateApplicationNumberList(year string) []string {
 	yearNum, _ := strconv.Atoi(year)
 	if yearNum > 2016 {
 		//  40
-		serialNumberList := getSerialNumberList("40", year)
+		serialNumberList := getSerialNumberList("40", year, length, startNumber)
 		for _, serialNumber := range serialNumberList {
 			value = model.KiprisApplicationNumber{
-				ApplicationNumber: fmt.Sprintf("%s%s%s", "40", year, serialNumber),
+				ApplicationNumber: fmt.Sprintf("%s%s%07d", "40", year, serialNumber),
+				ProductCode:       "40",
+				Year:              year,
+				SerialNumber:      serialNumber,
 			}
-			// applicationNumberList = append(applicationNumberList, fmt.Sprintf("%s%s%s", "40", year, serialNumber))
 			c.storage.Create(&value)
 		}
 	} else {
 		for _, productCode := range productCodeList {
-			serialNumberList := getSerialNumberList(productCode, year)
+			serialNumberList := getSerialNumberList(productCode, year, length, startNumber)
 			for _, serialNumber := range serialNumberList {
-				// applicationNumberList = append(applicationNumberList, fmt.Sprintf("%s%s%s", productCode, year, serialNumber))
 				value = model.KiprisApplicationNumber{
-					ApplicationNumber: fmt.Sprintf("%s%s%s", productCode, year, serialNumber),
+					ApplicationNumber: fmt.Sprintf("%s%s%07d", productCode, year, serialNumber),
+					ProductCode:       productCode,
+					Year:              year,
+					SerialNumber:      serialNumber,
 				}
 				c.storage.Create(&value)
 			}

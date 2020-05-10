@@ -4,10 +4,124 @@ import (
 	"testing"
 
 	"github.com/jiwoniy/otmk-kipris-collector/model"
+	"github.com/jiwoniy/otmk-kipris-collector/types"
 )
 
+func TestKiprisApplicationNumber(t *testing.T) {
+	storageConfig := types.StorageConfig{
+		DbType:       "sqlite3",
+		DbConnString: ":memory:",
+	}
+
+	storage, err := NewStorage(storageConfig)
+	if err != nil {
+		t.Error(err)
+	}
+
+	type testcases struct {
+		data    model.KiprisApplicationNumber
+		result  model.KiprisApplicationNumber
+		success bool
+	}
+
+	tests := []testcases{
+		{
+			data: model.KiprisApplicationNumber{
+				ApplicationNumber: "4020200000001",
+				ProductCode:       "40",
+				Year:              "2020",
+				SerialNumber:      1,
+			},
+			result:  model.KiprisApplicationNumber{},
+			success: true,
+		},
+		{
+			data: model.KiprisApplicationNumber{
+				ApplicationNumber: "4020000000001",
+				ProductCode:       "40",
+				Year:              "2000",
+				SerialNumber:      1,
+			},
+			result:  model.KiprisApplicationNumber{},
+			success: true,
+		},
+		{
+			data: model.KiprisApplicationNumber{
+				ApplicationNumber: "4120100000002",
+				ProductCode:       "41",
+				Year:              "2010",
+				SerialNumber:      2,
+			},
+			result:  model.KiprisApplicationNumber{},
+			success: true,
+		},
+		{
+			data: model.KiprisApplicationNumber{
+				ApplicationNumber: "4519990999990",
+				ProductCode:       "45",
+				Year:              "1999",
+				SerialNumber:      999990,
+			},
+			result:  model.KiprisApplicationNumber{},
+			success: true,
+		},
+		{
+			data: model.KiprisApplicationNumber{
+				ApplicationNumber: "4020000000001",
+				ProductCode:       "40",
+				Year:              "2000",
+				SerialNumber:      1,
+			},
+			result:  model.KiprisApplicationNumber{},
+			success: true,
+		},
+		{
+			data: model.KiprisApplicationNumber{
+				ApplicationNumber: "4020209999999",
+				ProductCode:       "40",
+				Year:              "2020",
+				SerialNumber:      9999999,
+			},
+			result:  model.KiprisApplicationNumber{},
+			success: false,
+		},
+	}
+
+	for tcIndex, tc := range tests {
+		if tc.success {
+			storage.Create(&tc.data)
+		}
+
+		storage.GetKiprisApplicationNumber(tc.data, &tc.result)
+		if tc.success == true && tc.result.ApplicationNumber == "" {
+			t.Errorf("testcase %d error: %s", tcIndex+1, err)
+		} else if tc.success == false && tc.result.ApplicationNumber != "" {
+			t.Errorf("testcase %d error: %s", tcIndex+1, err)
+		}
+	}
+
+	searchResult := make([]model.KiprisApplicationNumber, 0)
+	searchData := model.KiprisApplicationNumber{
+		ProductCode: "40",
+	}
+	storage.GetKiprisApplicationNumberList(searchData, &searchResult)
+
+	if len(searchResult) != 3 {
+		t.Errorf("search data find %v shoud be %d", searchData, len(searchResult))
+	}
+
+	searchData = model.KiprisApplicationNumber{
+		Year: "2000",
+	}
+	storage.GetKiprisApplicationNumberList(searchData, &searchResult)
+	if len(searchResult) != 2 {
+		t.Errorf("search data find %v shoud be %d", searchData, len(searchResult))
+	}
+
+}
+
 func TestTradeMarkInfo(t *testing.T) {
-	storageConfig := StorageConfig{
+	storageConfig := types.StorageConfig{
 		DbType:       "sqlite3",
 		DbConnString: ":memory:",
 	}
@@ -110,7 +224,7 @@ func TestTradeMarkInfo(t *testing.T) {
 }
 
 func TestTrademarkDesignationGoodstInfo(t *testing.T) {
-	storageConfig := StorageConfig{
+	storageConfig := types.StorageConfig{
 		DbType:       "sqlite3",
 		DbConnString: ":memory:",
 	}
@@ -122,7 +236,7 @@ func TestTrademarkDesignationGoodstInfo(t *testing.T) {
 
 	type testcases struct {
 		data    model.TrademarkDesignationGoodstInfo
-		result  model.TrademarkDesignationGoodstInfo
+		result  []model.TrademarkDesignationGoodstInfo
 		success bool
 	}
 
@@ -226,11 +340,11 @@ func TestTrademarkDesignationGoodstInfo(t *testing.T) {
 				SimilargroupCode:                              tc.data.SimilargroupCode,
 				DesignationGoodsHangeulName:                   tc.data.DesignationGoodsHangeulName,
 			}, &tc.result)
-			if tc.result.ApplicationNumber != tc.data.ApplicationNumber ||
-				tc.result.DesignationGoodsSerialNumber != tc.data.DesignationGoodsSerialNumber ||
-				tc.result.DesignationGoodsClassificationInformationCode != tc.data.DesignationGoodsClassificationInformationCode ||
-				tc.result.DesignationGoodsHangeulName != tc.data.DesignationGoodsHangeulName ||
-				tc.result.SimilargroupCode != tc.data.SimilargroupCode {
+			if tc.result[0].ApplicationNumber != tc.data.ApplicationNumber ||
+				tc.result[0].DesignationGoodsSerialNumber != tc.data.DesignationGoodsSerialNumber ||
+				tc.result[0].DesignationGoodsClassificationInformationCode != tc.data.DesignationGoodsClassificationInformationCode ||
+				tc.result[0].DesignationGoodsHangeulName != tc.data.DesignationGoodsHangeulName ||
+				tc.result[0].SimilargroupCode != tc.data.SimilargroupCode {
 				t.Errorf("testcase %d error", tcIndex+1)
 			}
 		}
@@ -238,7 +352,7 @@ func TestTrademarkDesignationGoodstInfo(t *testing.T) {
 }
 
 func TestKiprisCollector(t *testing.T) {
-	storageConfig := StorageConfig{
+	storageConfig := types.StorageConfig{
 		DbType:       "sqlite3",
 		DbConnString: ":memory:",
 	}
@@ -249,37 +363,37 @@ func TestKiprisCollector(t *testing.T) {
 	}
 
 	type testcases struct {
-		data    model.KiprisCollector
-		result  model.KiprisCollector
+		data    model.KiprisCollectorStatus
+		result  model.KiprisCollectorStatus
 		success bool
 	}
 
 	tests := []testcases{
 		{
-			data: model.KiprisCollector{
+			data: model.KiprisCollectorStatus{
 				ApplicationNumber:                  "402020000001",
 				TradeMarkInfoStatus:                model.Success,
 				TradeMarkDesignationGoodInfoStatus: model.Success,
 			},
-			result:  model.KiprisCollector{},
+			result:  model.KiprisCollectorStatus{},
 			success: true,
 		},
 		{
-			data: model.KiprisCollector{
+			data: model.KiprisCollectorStatus{
 				ApplicationNumber:                  "402020000002",
 				TradeMarkInfoStatus:                model.Error,
 				TradeMarkDesignationGoodInfoStatus: model.Error,
 			},
-			result:  model.KiprisCollector{},
+			result:  model.KiprisCollectorStatus{},
 			success: true,
 		},
 		{
-			data: model.KiprisCollector{
+			data: model.KiprisCollectorStatus{
 				ApplicationNumber:                  "402020000003",
 				TradeMarkInfoStatus:                model.Empty,
 				TradeMarkDesignationGoodInfoStatus: model.Empty,
 			},
-			result:  model.KiprisCollector{},
+			result:  model.KiprisCollectorStatus{},
 			success: true,
 		},
 	}

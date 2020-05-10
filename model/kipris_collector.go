@@ -5,32 +5,35 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// kipirs aplication number list
 type KiprisApplicationNumber struct {
 	gorm.Model
-	ApplicationNumber string `gorm:"not null;" validate:"required"`
+	ApplicationNumber string `gorm:"not null;unique;" validate:"required"`
+	ProductCode       string `gorm:"not null;" validate:"required"`
+	Year              string `gorm:"not null;" validate:"required"`
+	SerialNumber      int    `gorm:"not null;" validate:"required"`
+	isExist           bool
 }
 
-type KiprisCollector struct {
+type KiprisCollectorStatus struct {
 	gorm.Model
 	ApplicationNumber                  string               `gorm:"not null;" validate:"required"`
 	TradeMarkInfoStatus                KiprisResponseStatus `validate:"required"`
 	TradeMarkDesignationGoodInfoStatus KiprisResponseStatus `validate:"required"`
-	// Error             string
 }
 
 type KiprisCollectorHistory struct {
 	gorm.Model
 	ApplicationNumber string `gorm:"not null;" validate:"required"`
-	IsSuccess         bool   `validate:"required"`
-	Error             string `validate:"required"`
-	// Error             string
+	IsSuccess         bool
+	Error             string
 }
 
 func (data *KiprisApplicationNumber) Valid() bool {
 	return true
 }
 
-func (data *KiprisCollector) Valid() bool {
+func (data *KiprisCollectorStatus) Valid() bool {
 	validate = validator.New()
 	err := validate.Struct(data)
 

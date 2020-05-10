@@ -2,7 +2,6 @@ package collector
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/jiwoniy/otmk-kipris-collector/model"
@@ -131,39 +130,35 @@ func (suite *CollectorTestSuite) TestCollector() {
 	}
 }
 
-// func (suite *CollectorTestSuite) TestCrawler() {
-// 	applicationNumberList := suite.collector.CreateApplicationNumberList()
-// 	var wg sync.WaitGroup
+func (suite *CollectorTestSuite) TestCrawler() {
+	// suite.collector.CreateApplicationNumberList("2017", 100, 1)
 
-// 	for _, applicationNumber := range applicationNumberList {
-// 		wg.Add(1)
-// 		go func(appNumber string) {
-// 			defer wg.Done()
-// 			suite.collector.CrawlerApplicationNumber(appNumber)
-// 		}(applicationNumber)
-// 	}
-// 	wg.Wait()
-// }
+	suite.collector.StartCrawler("2017")
+}
 
 // func (suite *CollectorTestSuite) TestCreateApplicationNumberList() {
 // 	applicationNumberList := suite.collector.CreateApplicationNumberList("2017")
 // 	fmt.Println(applicationNumberList)
 // }
 
-func (suite *CollectorTestSuite) TestTotalCreateApplicationNumberList() {
-	yearList := make([]string, 0)
-	current, _ := strconv.Atoi("2020")
-	start, _ := strconv.Atoi("1950")
+// func (suite *CollectorTestSuite) TestTotalCreateApplicationNumberList() {
+// 	yearList := make([]string, 0)
+// 	current, _ := strconv.Atoi("2020")
+// 	start, _ := strconv.Atoi("1950")
 
-	for i := start; i <= current; i++ {
-		yearList = append(yearList, strconv.Itoa(i))
-	}
+// 	for i := start; i <= current; i++ {
+// 		yearList = append(yearList, strconv.Itoa(i))
+// 	}
 
-	for _, year := range yearList {
-		applicationNumberList := suite.collector.CreateApplicationNumberList(year)
-		fmt.Println(applicationNumberList)
-	}
-}
+// 	for _, year := range yearList {
+// 		applicationNumberList := suite.collector.CreateApplicationNumberList(year, 100)
+// 		fmt.Println(applicationNumberList)
+// 	}
+// }
+
+// func (suite *CollectorTestSuite) TestGetApplicationNumberList() {
+// 	suite.collector.CreateApplicationNumberList("1998", 100, 200)
+// }
 
 // Not used
 func (suite *CollectorTestSuite) TestFindApplicationNumberLogic() {

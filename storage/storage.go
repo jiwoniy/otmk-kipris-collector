@@ -26,7 +26,7 @@ func open(dbType string, dbConnString string) (*gorm.DB, error) {
 }
 
 func migrate(db *gorm.DB) {
-	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{}, &model.KiprisCollector{}, &model.KiprisCollectorHistory{}, &model.KiprisApplicationNumber{})
+	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{}, &model.KiprisCollectorStatus{}, &model.KiprisCollectorHistory{}, &model.KiprisApplicationNumber{})
 }
 
 func NewStorage(config types.StorageConfig) (types.Storage, error) {
@@ -66,8 +66,16 @@ func (s *storage) Create(v types.Model) error {
 	return nil
 }
 
-func (s *storage) GetKiprisApplicationNumber(v model.KiprisCollector, data *model.KiprisCollector) {
+func (s *storage) GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber) {
 	s.db.Where(&v).First(&data)
+}
+
+func (s *storage) GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber) {
+	s.db.Where(&v).Find(&data)
+}
+
+func (s *storage) GetKiprisCollector(v model.KiprisCollectorStatus, data *model.KiprisCollectorStatus) {
+	s.db.Where(&v).Find(&data)
 }
 
 func (s *storage) GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkInfo) {

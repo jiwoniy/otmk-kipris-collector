@@ -11,9 +11,10 @@ type Collector interface {
 	GetParser() Parser
 	GetStorage() Storage
 	Get(url string, params map[string]string) ([]byte, error)
+	StartCrawler(year string)
 	CrawlerApplicationNumber(applicationNumber string) bool
 
-	CreateApplicationNumberList(year string) []string
+	CreateApplicationNumberList(year string, length int, startNumber int) []string
 	CreateApplicationNumber(productCode string, year string, serialNumber int) string
 
 	// for find application number. but it is useless
@@ -36,7 +37,9 @@ type Storage interface {
 	GetDB() *gorm.DB
 	CloseDB()
 	Create(v Model) error
-	GetKiprisApplicationNumber(v model.KiprisCollector, data *model.KiprisCollector)
+	GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber)
+	GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber)
+	GetKiprisCollector(v model.KiprisCollectorStatus, data *model.KiprisCollectorStatus)
 	GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkInfo)
 	GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *[]model.TrademarkDesignationGoodstInfo)
 }
