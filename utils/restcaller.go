@@ -34,7 +34,7 @@ func BuildRESTCaller(root string) *RESTCallerBuilder {
 		root: root,
 		// respType: "json",
 		respType: "text/xml; charset=utf-8",
-		timeout:  "10s",
+		timeout:  "30s",
 	}
 }
 
@@ -151,14 +151,6 @@ func (rest *RESTCaller) Get(headers *http.Header, url string, params map[string]
 	log.Printf("[GET] %s (%d bytes)", url, len(body))
 
 	return body, err
-
-	// err = rest.Unmarshal(body, dest)
-	// if err != nil {
-	// 	log.Printf("[POST] %s (error: %s)", url, err.Error())
-	// 	return nil, err
-	// }
-
-	// return nil, err
 }
 
 // Post calls REST API through POST method

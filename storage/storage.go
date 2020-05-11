@@ -18,6 +18,10 @@ type storage struct {
 
 func open(dbType string, dbConnString string) (*gorm.DB, error) {
 	db, err := gorm.Open(dbType, dbConnString)
+
+	db.DB().SetMaxIdleConns(10)
+	db.DB().SetMaxOpenConns(100)
+
 	if err != nil {
 		return nil, err
 	}
@@ -70,8 +74,13 @@ func (s *storage) GetKiprisApplicationNumber(v model.KiprisApplicationNumber, da
 	s.db.Where(&v).First(&data)
 }
 
-func (s *storage) GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber) {
-	s.db.Where(&v).Find(&data)
+func (s *storage) GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber, startSerialNumber int, endSerialNumber int) {
+	tx := s.db.Where(&v)
+	if startSerialNumber > 0 && endSerialNumber > 0 {
+		tx.Find(&data, "serial_number >= ? AND serial_number <= ?", startSerialNumber, endSerialNumber)
+	} else {
+		tx.Find(&data)
+	}
 }
 
 func (s *storage) GetKiprisCollector(v model.KiprisCollectorStatus, data *model.KiprisCollectorStatus) {

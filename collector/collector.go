@@ -28,7 +28,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	// defer fpLog.Close()
+	defer fpLog.Close()
 
 	collectLogger = log.New(fpLog, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 }
@@ -89,12 +89,14 @@ func (c *kiprisCollector) Get(url string, params map[string]string) ([]byte, err
 }
 
 // product string, year string, length int, startNumber int
-func (c *kiprisCollector) StartCrawler(year string) {
+func (c *kiprisCollector) StartCrawler(year string, productCode string, startSerialNumber int, endSerialNumber int) {
 	searchResult := make([]model.KiprisApplicationNumber, 0)
 	searchData := model.KiprisApplicationNumber{
-		Year: year,
+		Year:        year,
+		ProductCode: productCode,
 	}
-	c.storage.GetKiprisApplicationNumberList(searchData, &searchResult)
+
+	c.storage.GetKiprisApplicationNumberList(searchData, &searchResult, startSerialNumber, endSerialNumber)
 
 	var wg sync.WaitGroup
 	for _, application := range searchResult {
@@ -107,70 +109,99 @@ func (c *kiprisCollector) StartCrawler(year string) {
 	wg.Wait()
 }
 
-func (c *kiprisCollector) saveHistory(applicationNumber string, isSuccess bool, Error string) {
+func (c *kiprisCollector) saveKiprisCollectorHistory(applicationNumber string, isSuccess bool, Error string) {
 	history := model.KiprisCollectorHistory{
 		ApplicationNumber: applicationNumber,
 		IsSuccess:         isSuccess,
 		Error:             Error,
 	}
+	if Error == "" {
+		log.Printf("[Success ApplicationNumber] %s", applicationNumber)
+	} else {
+		log.Printf("[Fail ApplicationNumber] %s (error: %s)", applicationNumber, Error)
+	}
 	err := c.storage.Create(&history)
 	if err != nil {
-		collectLogger.Printf("fail to applicationNumber: %s history error %s", applicationNumber, err)
+		log.Printf("[Save History ApplicationNumber] %s (error: %s)", applicationNumber, Error)
+		// collectLogger.Printf("[ApplicationNumber] %s (error: %s)", applicationNumber, Error)
 	}
 }
 
-func (c *kiprisCollector) CrawlerApplicationNumber(applicationNumber string) bool {
+func getKiprisTradeMarkInfo(c *kiprisCollector, applicationNumber string) (*model.KiprisResponse, string) {
 	params := map[string]string{
 		"applicationNumber": applicationNumber,
 		"accessKey":         c.GetAccessKey(),
 	}
 	content, err := c.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
-
 	if err != nil {
-		c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo request: %s", err.Error()))
-		return false
+		return nil, fmt.Sprint("[GET TradeMarkInfo] applicationNumberSearchInfo request step")
 	}
 
 	var tradeMarkInfo model.KiprisResponse
 	err = c.parser.Parse(content, &tradeMarkInfo)
+
 	if err != nil {
-		c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo parsing: %s", err.Error()))
-		return false
-	}
-	if tradeMarkInfo.Result() == model.Success {
-		err = c.storage.Create(&tradeMarkInfo.Body.Items.TradeMarkInfo)
-		if err != nil {
-			c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo save: %s", err.Error()))
-			return false
-		}
-	} else {
-		c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo data, response status is %d", tradeMarkInfo.Result()))
-		return false
+		return nil, fmt.Sprint("[GET TradeMarkInfo] applicationNumberSearchInfo parsing step")
 	}
 
-	content, err = c.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
+	if tradeMarkInfo.Result() == model.Success {
+		return &tradeMarkInfo, ""
+	} else {
+		return nil, fmt.Sprintf("[GET TradeMarkInfo] applicationNumberSearchInfo response %d", tradeMarkInfo.Result())
+	}
+}
+
+func getTrademarkDesignationGoodstInfo(c *kiprisCollector, applicationNumber string) (*model.KiprisResponse, string) {
+	params := map[string]string{
+		"applicationNumber": applicationNumber,
+		"accessKey":         c.GetAccessKey(),
+	}
+
+	content, err := c.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
 	if err != nil {
-		c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in trademarkDesignationGoodstInfo request: %s", err.Error()))
-		return false
+		return nil, fmt.Sprint("[GET TrademarkDesignationGoodstInfo] trademarkDesignationGoodstInfo request step")
 	}
 
 	var trademarkDesignationGoodstInfo model.KiprisResponse
 	err = c.parser.Parse(content, &trademarkDesignationGoodstInfo)
 	if err != nil {
-		c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in trademarkDesignationGoodstInfo parsing: %s", err.Error()))
+		return nil, fmt.Sprint("[GET TrademarkDesignationGoodstInfo] trademarkDesignationGoodstInfo pasring step")
+	}
+
+	if trademarkDesignationGoodstInfo.Result() == model.Success {
+		return &trademarkDesignationGoodstInfo, ""
+	} else {
+		return nil, fmt.Sprintf("[GET TrademarkDesignationGoodstInfo] trademarkDesignationGoodstInfo response %d", trademarkDesignationGoodstInfo.Result())
+	}
+}
+
+// 병렬처리
+func (c *kiprisCollector) CrawlerApplicationNumber(applicationNumber string) bool {
+	tradeMarkInfo, errString := getKiprisTradeMarkInfo(c, applicationNumber)
+
+	if errString != "" {
+		c.saveKiprisCollectorHistory(applicationNumber, false, errString)
+		return false
+	}
+
+	trademarkDesignationGoodstInfo, errString := getTrademarkDesignationGoodstInfo(c, applicationNumber)
+
+	if errString != "" {
+		c.saveKiprisCollectorHistory(applicationNumber, false, errString)
+		return false
+	}
+
+	err := c.storage.Create(&tradeMarkInfo.Body.Items.TradeMarkInfo)
+	if err != nil {
+		c.saveKiprisCollectorHistory(applicationNumber, false, err.Error())
 		return false
 	}
 
 	for _, good := range trademarkDesignationGoodstInfo.Body.Items.TrademarkDesignationGoodstInfo {
 		good.ApplicationNumber = applicationNumber
-		if trademarkDesignationGoodstInfo.Result() == model.Success {
-			err := c.storage.Create(&good)
-			if err != nil {
-				c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in trademarkDesignationGoodstInfo save: %s", err.Error()))
-				return false
-			}
-		} else {
-			c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in applicationNumberSearchInfo data, response status is %d", tradeMarkInfo.Result()))
+		err := c.storage.Create(&good)
+		if err != nil {
+			c.saveKiprisCollectorHistory(applicationNumber, false, err.Error())
 			return false
 		}
 	}
@@ -184,11 +215,11 @@ func (c *kiprisCollector) CrawlerApplicationNumber(applicationNumber string) boo
 	err = c.storage.Create(&statistic)
 
 	if err != nil {
-		c.saveHistory(applicationNumber, false, fmt.Sprintf("error happen in kipris collector save: %s", err.Error()))
+		c.saveKiprisCollectorHistory(applicationNumber, false, err.Error())
 		return false
 	}
 
-	c.saveHistory(applicationNumber, true, "")
+	c.saveKiprisCollectorHistory(applicationNumber, true, "")
 
 	return true
 }
