@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/jiwoniy/otmk-kipris-collector/model"
@@ -19,6 +20,7 @@ type kiprisCollector struct {
 	accessKey string
 	parser    types.Parser
 	storage   types.Storage
+	query     types.Query
 }
 
 var collectLogger *log.Logger
@@ -49,11 +51,21 @@ func NewCollector(config CollectorConfig) (types.Collector, error) {
 		return nil, err
 	}
 
+	// query, err := query.NewApp(types.QueryConfig{
+	// 	DbType:       config.DbType,
+	// 	DbConnString: config.DbConnString,
+	// })
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &kiprisCollector{
 		endpt:     config.Endpoint,
 		accessKey: config.AccessKey,
 		parser:    parserInstance,
 		storage:   storage,
+		// query:     query,
 	}, nil
 }
 
@@ -86,6 +98,62 @@ func (c *kiprisCollector) Get(url string, params map[string]string) ([]byte, err
 	}
 
 	return body, nil
+}
+
+// create kipris collector task
+// 처음에는 create만 만들고 추후에 delete & create 하자
+func (c *kiprisCollector) CreatTask(args types.TaskParameters) error {
+	// 상표법 개정에 따라 서비스표(41), 상표/서비스표(45)는 2016년 9월 1일 이후 출원건에 대해 상표(40)에 통합 되었습니다.
+	productCodeList := []string{
+		"40",
+		"41",
+		"45",
+	}
+
+	year := args.Year
+	serialNumberRange := args.SerialNumberRange
+
+	// require
+	if year == "" {
+		return fmt.Errorf("parameters's year require")
+	}
+	// require
+	if serialNumberRange == "" {
+		return fmt.Errorf("serialNumberRange require")
+	}
+
+	// kiprisApplicationNumbers := make([]model.KiprisApplicationNumber, 0)
+
+	yearInt, _ := strconv.Atoi(year)
+	if yearInt > 2016 {
+		serialNumberList := getSerialNumberList(serialNumberRange)
+		for _, serialNumber := range serialNumberList {
+			kiprisApplicationNumber := model.KiprisApplicationNumber{
+				ApplicationNumber: fmt.Sprintf("%s%s%07d", "40", year, serialNumber),
+				ProductCode:       "40",
+				Year:              year,
+				SerialNumber:      serialNumber,
+			}
+			// kiprisApplicationNumbers = append(kiprisApplicationNumbers, kiprisApplicationNumber)
+			c.storage.Create(&kiprisApplicationNumber)
+		}
+	} else {
+		serialNumberList := getSerialNumberList(serialNumberRange)
+		for _, productCode := range productCodeList {
+			for _, serialNumber := range serialNumberList {
+				kiprisApplicationNumber := model.KiprisApplicationNumber{
+					ApplicationNumber: fmt.Sprintf("%s%s%07d", productCode, year, serialNumber),
+					ProductCode:       productCode,
+					Year:              year,
+					SerialNumber:      serialNumber,
+				}
+				// kiprisApplicationNumbers = append(kiprisApplicationNumbers, kiprisApplicationNumber)
+				c.storage.Create(&kiprisApplicationNumber)
+			}
+		}
+	}
+
+	return nil
 }
 
 // product string, year string, length int, startNumber int
@@ -245,15 +313,28 @@ func (c *kiprisCollector) isApplicationNumberExist(applicationNumber string) boo
 	return false
 }
 
-func getSerialNumberList(product string, year string, length int, startNumber int) []int {
-	serialNumberList := make([]int, length)
+func getSerialNumberList(serialNumberRange string) []int {
+	serialRangeList := strings.Split(serialNumberRange, ",")
 
-	startIndex := 1
-	if startNumber > 1 {
-		startIndex = startNumber
+	min := 0
+	max := 9999999
+	for _, serial := range serialRangeList {
+		value, _ := strconv.Atoi(serial)
+		if value >= min && value <= max {
+			// validate range
+			if min == 0 {
+				min = value
+			} else if value > min {
+				max = value
+			}
+		} else {
+			panic("Not validate serialNumber")
+		}
 	}
+
+	serialNumberList := make([]int, max-min+1)
 	for index, _ := range serialNumberList {
-		serialNumberList[index] = index + startIndex
+		serialNumberList[index] = index + min
 	}
 
 	return serialNumberList
@@ -263,41 +344,41 @@ func (c *kiprisCollector) CreateApplicationNumberList(year string, length int, s
 	// 상표법 개정에 따라 서비스표(41), 상표/서비스표(45)는 2016년 9월 1일 이후 출원건에 대해 상표(40)에 통합 되었습니다.
 	applicationNumberList := make([]string, 0)
 
-	productCodeList := []string{
-		"40",
-		"41",
-		"45",
-	}
+	// productCodeList := []string{
+	// 	"40",
+	// 	"41",
+	// 	"45",
+	// }
 
-	var value model.KiprisApplicationNumber
+	// var value model.KiprisApplicationNumber
 
-	yearNum, _ := strconv.Atoi(year)
-	if yearNum > 2016 {
-		//  40
-		serialNumberList := getSerialNumberList("40", year, length, startNumber)
-		for _, serialNumber := range serialNumberList {
-			value = model.KiprisApplicationNumber{
-				ApplicationNumber: fmt.Sprintf("%s%s%07d", "40", year, serialNumber),
-				ProductCode:       "40",
-				Year:              year,
-				SerialNumber:      serialNumber,
-			}
-			c.storage.Create(&value)
-		}
-	} else {
-		for _, productCode := range productCodeList {
-			serialNumberList := getSerialNumberList(productCode, year, length, startNumber)
-			for _, serialNumber := range serialNumberList {
-				value = model.KiprisApplicationNumber{
-					ApplicationNumber: fmt.Sprintf("%s%s%07d", productCode, year, serialNumber),
-					ProductCode:       productCode,
-					Year:              year,
-					SerialNumber:      serialNumber,
-				}
-				c.storage.Create(&value)
-			}
-		}
-	}
+	// yearNum, _ := strconv.Atoi(year)
+	// if yearNum > 2016 {
+	// 	//  40
+	// 	serialNumberList := getSerialNumberList("40", year, length, startNumber)
+	// 	for _, serialNumber := range serialNumberList {
+	// 		value = model.KiprisApplicationNumber{
+	// 			ApplicationNumber: fmt.Sprintf("%s%s%07d", "40", year, serialNumber),
+	// 			ProductCode:       "40",
+	// 			Year:              year,
+	// 			SerialNumber:      serialNumber,
+	// 		}
+	// 		c.storage.Create(&value)
+	// 	}
+	// } else {
+	// 	for _, productCode := range productCodeList {
+	// 		serialNumberList := getSerialNumberList(productCode, year, length, startNumber)
+	// 		for _, serialNumber := range serialNumberList {
+	// 			value = model.KiprisApplicationNumber{
+	// 				ApplicationNumber: fmt.Sprintf("%s%s%07d", productCode, year, serialNumber),
+	// 				ProductCode:       productCode,
+	// 				Year:              year,
+	// 				SerialNumber:      serialNumber,
+	// 			}
+	// 			c.storage.Create(&value)
+	// 		}
+	// 	}
+	// }
 
 	return applicationNumberList
 }
@@ -308,42 +389,47 @@ func (c *kiprisCollector) CreateApplicationNumber(productCode string, year strin
 }
 
 // Not used
-func (c *kiprisCollector) GetMidValue(startNumber int, lastNumber int) int {
-	// startNumber, lastNumber가 int 형이기 때문에
-	// (lastNumber-startNumber)/2의 값은 버림처리가 된다.
-	mid := (lastNumber-startNumber)/2 + startNumber
-	return mid
-}
+// func (c *kiprisCollector) GetMidValue(startNumber int, lastNumber int) int {
+// 	// startNumber, lastNumber가 int 형이기 때문에
+// 	// (lastNumber-startNumber)/2의 값은 버림처리가 된다.
+// 	mid := (lastNumber-startNumber)/2 + startNumber
+// 	return mid
+// }
 
-func (c *kiprisCollector) GetLastApplicationNumber(startNumber string, lastNumber string, checker func(string) bool) (string, string, error) {
-	start, err := strconv.Atoi(startNumber)
-	last, err := strconv.Atoi(lastNumber)
+// func (c *kiprisCollector) GetLastApplicationNumber(startNumber string, lastNumber string, checker func(string) bool) (string, string, error) {
+// 	start, err := strconv.Atoi(startNumber)
+// 	last, err := strconv.Atoi(lastNumber)
 
-	if err != nil {
-		return "", "", err
-	}
+// 	if err != nil {
+// 		return "", "", err
+// 	}
 
-	if start >= last {
-		return "", "", fmt.Errorf("uncorrect %d, %d", start, last)
-	}
+// 	if start >= last {
+// 		return "", "", fmt.Errorf("uncorrect %d, %d", start, last)
+// 	}
 
-	mid := c.GetMidValue(start, last)
+// 	mid := c.GetMidValue(start, last)
 
-	midNumber := strconv.Itoa(mid)
+// 	midNumber := strconv.Itoa(mid)
 
-	if mid == start {
-		return startNumber, startNumber, nil
-	} else if mid == last {
-		return lastNumber, lastNumber, nil
-	}
+// 	if mid == start {
+// 		return startNumber, startNumber, nil
+// 	} else if mid == last {
+// 		return lastNumber, lastNumber, nil
+// 	}
 
-	isExist := checker(strconv.Itoa(mid))
+// 	isExist := checker(strconv.Itoa(mid))
 
-	if isExist {
-		return midNumber, lastNumber, nil
-	}
+// 	if isExist {
+// 		return midNumber, lastNumber, nil
+// 	}
 
-	return startNumber, midNumber, nil
+// 	return startNumber, midNumber, nil
+// }
+
+func (c *kiprisCollector) GetLastApplicationNumber(year string) string {
+	lastApplicationNumber := c.storage.GetYearLastApplicationNumber(year)
+	return lastApplicationNumber
 }
 
 // Not used

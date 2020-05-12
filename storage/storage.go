@@ -70,6 +70,14 @@ func (s *storage) Create(v types.Model) error {
 	return nil
 }
 
+func (s *storage) GetYearLastApplicationNumber(year string) string {
+	// s.db.Where(&v).First(&data)
+	var data model.KiprisApplicationNumber
+	s.db.Table("kipris_application_numbers").Where("year = ?", year).Last(&data)
+	fmt.Println(data.ApplicationNumber)
+	return "ddd"
+}
+
 func (s *storage) GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber) {
 	s.db.Where(&v).First(&data)
 }

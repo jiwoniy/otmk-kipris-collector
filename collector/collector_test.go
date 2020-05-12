@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/jiwoniy/otmk-kipris-collector/types"
@@ -130,9 +131,23 @@ func (suite *CollectorTestSuite) SetupTest() {
 // 	}
 // }
 
-func (suite *CollectorTestSuite) TestCrawler() {
-	suite.collector.StartCrawler("2017", "40", 300, 350)
+// func (suite *CollectorTestSuite) TestCreatManualTask() {
+
+// }
+func (suite *CollectorTestSuite) TestCreatTask() {
+	// param := types.TaskParameters{
+	// 	Year: "2015",
+	// 	// SerialNumberRange: "2,110",
+	// }
+	// err := suite.collector.CreatTask(param)
+	// fmt.Println(err)
+	lastApplicationNumber := suite.collector.GetLastApplicationNumber("2017")
+	fmt.Println(lastApplicationNumber)
 }
+
+// func (suite *CollectorTestSuite) TestCrawler() {
+// 	suite.collector.StartCrawler("2017", "40", 300, 350)
+// }
 
 // func (suite *CollectorTestSuite) TestCreateApplicationNumberList() {
 // 	suite.collector.CreateApplicationNumberList("2017", 1000, 1)
