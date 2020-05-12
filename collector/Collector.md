@@ -14,3 +14,8 @@ Kipris Collector
 --------------
 - 단건 수집
 - 다건 수집
+
+
+
+작업순서
+applicationNumber(출원번호) 목록을 만든다

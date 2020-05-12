@@ -16,13 +16,13 @@ type CollectorTestSuite struct {
 
 func (suite *CollectorTestSuite) SetupTest() {
 	config := types.CollectorConfig{
-		Endpoint:     "http://plus.kipris.or.kr/openapi/rest",
-		AccessKey:    "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=", // onthe mark key
-		DbType:       "mysql",
-		DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
-		// DbType:       "sqlite3",
+		Endpoint:  "http://plus.kipris.or.kr/openapi/rest",
+		AccessKey: "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=", // onthe mark key
+		// DbType:       "mysql",
+		// DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
+		DbType: "sqlite3",
 		// DbConnString: ":memory:",
-		// DbConnString: "./test.db",
+		DbConnString: "./test.db",
 	}
 
 	collector, err := NewCollector(config)
@@ -137,10 +137,10 @@ func (suite *CollectorTestSuite) SetupTest() {
 // }
 // func (suite *CollectorTestSuite) TestCreatTask() {
 // 	param := types.TaskParameters{
-// 		Year:              "2015",
-// 		SerialNumberRange: "2,3",
+// 		Year:              "2019",
+// 		SerialNumberRange: "1,100",
 // 	}
-// 	err := suite.collector.CreatTask(param)
+// 	err := suite.collector.CreateTask(param)
 // 	fmt.Println(err)
 // }
 
@@ -154,16 +154,30 @@ func (suite *CollectorTestSuite) SetupTest() {
 // 	fmt.Println(err)
 // }
 
-func (suite *CollectorTestSuite) TestGetKiprisApplicationNumerList() {
-	param := types.TaskParameters{
-		ProductCode:       "40",
-		Year:              "2017",
-		SerialNumberRange: "1,20",
-	}
-	pagination, err := suite.collector.GetApplicationNumberList(param)
-	fmt.Println(pagination.Data)
+// func (suite *CollectorTestSuite) TestGetTaskList() {
+// 	pagination, err := suite.collector.GetTaskList(1, 20)
+// }
+
+// func (suite *CollectorTestSuite) TestGetTaskApplicationNumberList() {
+// 	pagination, _ := suite.collector.GetTaskApplicationNumberList(1, 1, 20)
+// 	fmt.Println(pagination.TotalRecord)
+// }
+
+func (suite *CollectorTestSuite) TestStartCrawler() {
+	err := suite.collector.StartCrawler(1)
 	fmt.Println(err)
 }
+
+// func (suite *CollectorTestSuite) TestGetKiprisApplicationNumerList() {
+// 	param := types.TaskParameters{
+// 		ProductCode:       "40",
+// 		Year:              "2017",
+// 		SerialNumberRange: "1,20",
+// 	}
+// 	pagination, err := suite.collector.GetApplicationNumberList(param)
+// 	fmt.Println(pagination.Data)
+// 	fmt.Println(err)
+// }
 
 // func (suite *CollectorTestSuite) TestCrawler() {
 // 	suite.collector.StartCrawler("2017", "40", 300, 350)

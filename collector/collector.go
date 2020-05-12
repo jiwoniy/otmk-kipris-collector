@@ -7,10 +7,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	// "sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
 	"github.com/jiwoniy/otmk-kipris-collector/model"
 	"github.com/jiwoniy/otmk-kipris-collector/pagination"
 	"github.com/jiwoniy/otmk-kipris-collector/parser"
@@ -56,11 +59,6 @@ func NewCollector(config types.CollectorConfig) (types.Collector, error) {
 		return nil, err
 	}
 
-	// query, err := query.NewApp(types.QueryConfig{
-	// 	DbType:       config.DbType,
-	// 	DbConnString: config.DbConnString,
-	// })
-
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +68,6 @@ func NewCollector(config types.CollectorConfig) (types.Collector, error) {
 		accessKey: config.AccessKey,
 		parser:    parserInstance,
 		storage:   storage,
-		// query:     query,
 	}, nil
 }
 
@@ -90,46 +87,6 @@ func (c *kiprisCollector) GetStorage() types.Storage {
 	return c.storage
 }
 
-func (c *kiprisCollector) getSearch(ctx *gin.Context) {
-}
-
-func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
-	restMethods := make([]types.RestMethod, 1)
-	restMethods = append(restMethods,
-		types.RestMethod{
-			Path: "/search",
-			Handler: func(ctx *gin.Context) {
-				param := types.TaskParameters{
-					ProductCode:       "40",
-					Year:              "2017",
-					SerialNumberRange: "1,20",
-				}
-				c.GetApplicationNumberList(param)
-			},
-		},
-		types.RestMethod{
-			Path: "/ping",
-			Handler: func(ctx *gin.Context) {
-				ctx.String(http.StatusOK, "pong")
-			},
-		},
-		types.RestMethod{
-			Path: "/applicationNumbers",
-			Handler: func(ctx *gin.Context) {
-				params := types.TaskParameters{
-					ProductCode:       "40",
-					Year:              "2017",
-					SerialNumberRange: "1,20",
-				}
-				pagination, err := c.GetApplicationNumberList(params)
-				fmt.Println(pagination.Data)
-				fmt.Println(err)
-			},
-		},
-	)
-	return restMethods, nil
-}
-
 func (c *kiprisCollector) Get(url string, params map[string]string) ([]byte, error) {
 	caller, err := utils.BuildRESTCaller(c.endpt).Build()
 	if err != nil {
@@ -145,9 +102,46 @@ func (c *kiprisCollector) Get(url string, params map[string]string) ([]byte, err
 	return body, nil
 }
 
-// create kipris collector task
-// 처음에는 create만 만들고 추후에 delete & create 하자
-func (c *kiprisCollector) CreatTask(args types.TaskParameters) error {
+// For rest
+func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
+	restMethods := make([]types.RestMethod, 1)
+	restMethods = append(restMethods,
+		types.RestMethod{
+			Path: "/search",
+			Handler: func(ctx *gin.Context) {
+				// param := types.TaskParameters{
+				// 	ProductCode:       "40",
+				// 	Year:              "2017",
+				// 	SerialNumberRange: "1,20",
+				// }
+				// c.GetApplicationNumberList(param)
+			},
+		},
+		types.RestMethod{
+			Path: "/ping",
+			Handler: func(ctx *gin.Context) {
+				ctx.String(http.StatusOK, "pong")
+			},
+		},
+		types.RestMethod{
+			Path: "/applicationNumbers",
+			Handler: func(ctx *gin.Context) {
+				// params := types.TaskParameters{
+				// 	ProductCode:       "40",
+				// 	Year:              "2017",
+				// 	SerialNumberRange: "1,20",
+				// }
+				// pagination, err := c.GetApplicationNumberList(params)
+				// fmt.Println(pagination.Data)
+				// fmt.Println(err)
+			},
+		},
+	)
+	return restMethods, nil
+}
+
+// Kipris Task
+func (c *kiprisCollector) CreateTask(args types.TaskParameters) error {
 	// 상표법 개정에 따라 서비스표(41), 상표/서비스표(45)는 2016년 9월 1일 이후 출원건에 대해 상표(40)에 통합 되었습니다.
 	productCodeList := []string{
 		"40",
@@ -170,7 +164,7 @@ func (c *kiprisCollector) CreatTask(args types.TaskParameters) error {
 		}
 	}
 
-	// kiprisApplicationNumbers := make([]model.KiprisApplicationNumber, 0)
+	kiprisApplicationNumbers := make([]model.KiprisApplicationNumber, 0)
 
 	yearInt, _ := strconv.Atoi(year)
 	if yearInt > 2016 {
@@ -182,11 +176,7 @@ func (c *kiprisCollector) CreatTask(args types.TaskParameters) error {
 				Year:              year,
 				SerialNumber:      serialNumber,
 			}
-			// kiprisApplicationNumbers = append(kiprisApplicationNumbers, kiprisApplicationNumber)
-			err := c.storage.Create(&kiprisApplicationNumber)
-			if err != nil {
-				return err
-			}
+			kiprisApplicationNumbers = append(kiprisApplicationNumbers, kiprisApplicationNumber)
 		}
 	} else {
 		serialNumberList := getSerialNumberList(serialNumberRange)
@@ -198,19 +188,15 @@ func (c *kiprisCollector) CreatTask(args types.TaskParameters) error {
 					Year:              year,
 					SerialNumber:      serialNumber,
 				}
-				// kiprisApplicationNumbers = append(kiprisApplicationNumbers, kiprisApplicationNumber)
-				err := c.storage.Create(&kiprisApplicationNumber)
-				if err != nil {
-					return err
-				}
+				kiprisApplicationNumbers = append(kiprisApplicationNumbers, kiprisApplicationNumber)
 			}
 		}
 	}
 
-	// fmt.Println(kiprisApplicationNumbers)
-	return nil
+	return c.storage.CreateTask(&kiprisApplicationNumbers)
 }
 
+// Kipris Manual Task
 func (c *kiprisCollector) CreatManualTask(args types.TaskParameters) error {
 	productCode := args.ProductCode
 	year := args.Year
@@ -221,6 +207,7 @@ func (c *kiprisCollector) CreatManualTask(args types.TaskParameters) error {
 		return fmt.Errorf("Please pass task parameters")
 	}
 
+	kiprisApplicationNumbers := make([]model.KiprisApplicationNumber, 0)
 	serialNumberList := getSerialNumberList(serialNumberRange)
 	for _, serialNumber := range serialNumberList {
 		kiprisApplicationNumber := model.KiprisApplicationNumber{
@@ -229,69 +216,98 @@ func (c *kiprisCollector) CreatManualTask(args types.TaskParameters) error {
 			Year:              year,
 			SerialNumber:      serialNumber,
 		}
-		err := c.storage.Create(&kiprisApplicationNumber)
-		if err != nil {
-			return err
-		}
+		kiprisApplicationNumbers = append(kiprisApplicationNumbers, kiprisApplicationNumber)
 	}
 
-	return nil
+	return c.storage.CreateTask(&kiprisApplicationNumbers)
 }
 
-func (c *kiprisCollector) GetApplicationNumberList(args types.TaskParameters) (*pagination.Paginator, error) {
-	searchResult := make([]model.KiprisApplicationNumber, 0)
-	searchData := model.KiprisApplicationNumber{
-		Year:        args.Year,
-		ProductCode: args.ProductCode,
-	}
-
-	startSerialNumber := 0
-	endSerialNumber := 0
-	serialRangeList := strings.Split(args.SerialNumberRange, ",")
-	if len(serialRangeList) == 2 {
-		startSerialNumber, _ = strconv.Atoi(serialRangeList[0])
-		endSerialNumber, _ = strconv.Atoi(serialRangeList[1])
-	}
-
-	pagination, err := c.storage.GetKiprisApplicationNumberList(searchData, &searchResult, startSerialNumber, endSerialNumber, args.Page, args.Size)
+func (c *kiprisCollector) GetTaskList(pageParam int, sizeParam int) (*pagination.Paginator, error) {
+	pagination, err := c.storage.GetTaskList(pageParam, sizeParam)
 	return pagination, err
 }
 
-// product string, year string, length int, startNumber int
-func (c *kiprisCollector) StartCrawler(year string, productCode string, startSerialNumber int, endSerialNumber int) {
-	// searchResult := make([]model.KiprisApplicationNumber, 0)
-	// searchData := model.KiprisApplicationNumber{
-	// 	Year:        year,
-	// 	ProductCode: productCode,
-	// }
-
-	// c.storage.GetKiprisApplicationNumberList(searchData, &searchResult, startSerialNumber, endSerialNumber)
-
-	// // Crawer history
-
-	// var wg sync.WaitGroup
-	// for _, application := range searchResult {
-	// 	wg.Add(1)
-	// 	go func(appNumber string) {
-	// 		defer wg.Done()
-	// 		c.CrawlerApplicationNumber(appNumber)
-	// 	}(application.ApplicationNumber)
-	// }
-	// wg.Wait()
+func (c *kiprisCollector) GetTaskApplicationNumberList(taskId uint, pageParam int, sizeParam int) (*pagination.Paginator, error) {
+	pagination, err := c.storage.GetTaskApplicationNumberList(taskId, pageParam, sizeParam)
+	return pagination, err
 }
 
-func (c *kiprisCollector) saveKiprisCollectorHistory(applicationNumber string, isSuccess bool, Error string) {
+// func (c *kiprisCollector) GetApplicationNumberList(args types.TaskParameters) (*pagination.Paginator, error) {
+// 	searchResult := make([]model.KiprisApplicationNumber, 0)
+// 	searchData := model.KiprisApplicationNumber{
+// 		Year:        args.Year,
+// 		ProductCode: args.ProductCode,
+// 	}
+
+// 	startSerialNumber := 0
+// 	endSerialNumber := 0
+// 	serialRangeList := strings.Split(args.SerialNumberRange, ",")
+// 	if len(serialRangeList) == 2 {
+// 		startSerialNumber, _ = strconv.Atoi(serialRangeList[0])
+// 		endSerialNumber, _ = strconv.Atoi(serialRangeList[1])
+// 	}
+
+// 	pagination, err := c.storage.GetKiprisApplicationNumberList(searchData, &searchResult, startSerialNumber, endSerialNumber, args.Page, args.Size)
+// 	return pagination, err
+// }
+
+// product string, year string, length int, startNumber int
+func (c *kiprisCollector) StartCrawler(taskId uint) error {
+	// TODO paging 처리해서 GoGo (100개씩)
+	result := make([]model.KiprisApplicationNumber, 0)
+	db := c.storage.GetDB()
+
+	return db.Transaction(func(tx *gorm.DB) error {
+		currentTask := model.KiprisTask{}
+		if err := tx.Table("kipris_tasks").Where("id = ?", taskId).First(&currentTask).Error; err != nil {
+			// log.Printf("[StartCrawler Task Id] %d Step 1 (error: %s)", taskId, err)
+			log.Printf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
+			// fmt.Errorf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
+			return err
+		}
+
+		if err := tx.Model(&currentTask).Update("started", time.Now()).Error; err != nil {
+			// log.Printf("[StartCrawler Task Id] %d Step 2 (error: %s)", taskId, err)
+			log.Printf("[StartCrawler Task Id] %d Step 2 - Update Task started Date", taskId)
+			return err
+		}
+
+		if err := tx.Table("kipris_application_numbers").Where("task_id = ?", taskId).Find(&result).Error; err != nil {
+			log.Printf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number", taskId)
+			return err
+		}
+
+		var wg sync.WaitGroup
+		for _, application := range result {
+			wg.Add(1)
+			go func(appNumber string) {
+				defer wg.Done()
+				c.CrawlerApplicationNumber(tx, appNumber)
+			}(application.ApplicationNumber)
+		}
+		wg.Wait()
+
+		if err := tx.Model(&currentTask).Update("completed", time.Now()).Error; err != nil {
+			log.Printf("[StartCrawler Task Id] %d Step 4 - Update Task completed Date", taskId)
+			return err
+		}
+
+		return nil
+	})
+}
+
+func (c *kiprisCollector) saveKiprisCollectorHistory(tx *gorm.DB, applicationNumber string, isSuccess bool, Error string) {
 	history := model.KiprisCollectorHistory{
 		ApplicationNumber: applicationNumber,
 		IsSuccess:         isSuccess,
 		Error:             Error,
 	}
-	if Error == "" {
-		log.Printf("[Success ApplicationNumber] %s", applicationNumber)
-	} else {
-		log.Printf("[Fail ApplicationNumber] %s (error: %s)", applicationNumber, Error)
-	}
-	err := c.storage.Create(&history)
+	// if Error == "" {
+	// 	log.Printf("[Success ApplicationNumber] %s", applicationNumber)
+	// } else {
+	// 	log.Printf("[Fail ApplicationNumber] %s (error: %s)", applicationNumber, Error)
+	// }
+	err := tx.Create(&history)
 	if err != nil {
 		log.Printf("[Save History ApplicationNumber] %s (error: %s)", applicationNumber, Error)
 		// collectLogger.Printf("[ApplicationNumber] %s (error: %s)", applicationNumber, Error)
@@ -347,32 +363,30 @@ func getTrademarkDesignationGoodstInfo(c *kiprisCollector, applicationNumber str
 }
 
 // 병렬처리
-func (c *kiprisCollector) CrawlerApplicationNumber(applicationNumber string) bool {
+func (c *kiprisCollector) CrawlerApplicationNumber(tx *gorm.DB, applicationNumber string) bool {
 	tradeMarkInfo, errString := getKiprisTradeMarkInfo(c, applicationNumber)
 
 	if errString != "" {
-		c.saveKiprisCollectorHistory(applicationNumber, false, errString)
+		c.saveKiprisCollectorHistory(tx, applicationNumber, false, errString)
 		return false
 	}
 
 	trademarkDesignationGoodstInfo, errString := getTrademarkDesignationGoodstInfo(c, applicationNumber)
 
 	if errString != "" {
-		c.saveKiprisCollectorHistory(applicationNumber, false, errString)
+		c.saveKiprisCollectorHistory(tx, applicationNumber, false, errString)
 		return false
 	}
 
-	err := c.storage.Create(&tradeMarkInfo.Body.Items.TradeMarkInfo)
-	if err != nil {
-		c.saveKiprisCollectorHistory(applicationNumber, false, err.Error())
+	if err := tx.Create(&tradeMarkInfo.Body.Items.TradeMarkInfo).Error; err != nil {
+		c.saveKiprisCollectorHistory(tx, applicationNumber, false, err.Error())
 		return false
 	}
 
 	for _, good := range trademarkDesignationGoodstInfo.Body.Items.TrademarkDesignationGoodstInfo {
 		good.ApplicationNumber = applicationNumber
-		err := c.storage.Create(&good)
-		if err != nil {
-			c.saveKiprisCollectorHistory(applicationNumber, false, err.Error())
+		if err := tx.Create(&good).Error; err != nil {
+			c.saveKiprisCollectorHistory(tx, applicationNumber, false, err.Error())
 			return false
 		}
 	}
@@ -383,14 +397,12 @@ func (c *kiprisCollector) CrawlerApplicationNumber(applicationNumber string) boo
 		TradeMarkDesignationGoodInfoStatus: trademarkDesignationGoodstInfo.Result(),
 	}
 
-	err = c.storage.Create(&statistic)
-
-	if err != nil {
-		c.saveKiprisCollectorHistory(applicationNumber, false, err.Error())
+	if err := tx.Create(&statistic).Error; err != nil {
+		c.saveKiprisCollectorHistory(tx, applicationNumber, false, err.Error())
 		return false
 	}
 
-	c.saveKiprisCollectorHistory(applicationNumber, true, "")
+	c.saveKiprisCollectorHistory(tx, applicationNumber, true, "")
 
 	return true
 }
@@ -422,58 +434,15 @@ func getSerialNumberList(serialNumberRange string) []int {
 	return serialNumberList
 }
 
-func (c *kiprisCollector) CreateApplicationNumberList(year string, length int, startNumber int) []string {
-	// 상표법 개정에 따라 서비스표(41), 상표/서비스표(45)는 2016년 9월 1일 이후 출원건에 대해 상표(40)에 통합 되었습니다.
-	applicationNumberList := make([]string, 0)
-
-	// productCodeList := []string{
-	// 	"40",
-	// 	"41",
-	// 	"45",
-	// }
-
-	// var value model.KiprisApplicationNumber
-
-	// yearNum, _ := strconv.Atoi(year)
-	// if yearNum > 2016 {
-	// 	//  40
-	// 	serialNumberList := getSerialNumberList("40", year, length, startNumber)
-	// 	for _, serialNumber := range serialNumberList {
-	// 		value = model.KiprisApplicationNumber{
-	// 			ApplicationNumber: fmt.Sprintf("%s%s%07d", "40", year, serialNumber),
-	// 			ProductCode:       "40",
-	// 			Year:              year,
-	// 			SerialNumber:      serialNumber,
-	// 		}
-	// 		c.storage.Create(&value)
-	// 	}
-	// } else {
-	// 	for _, productCode := range productCodeList {
-	// 		serialNumberList := getSerialNumberList(productCode, year, length, startNumber)
-	// 		for _, serialNumber := range serialNumberList {
-	// 			value = model.KiprisApplicationNumber{
-	// 				ApplicationNumber: fmt.Sprintf("%s%s%07d", productCode, year, serialNumber),
-	// 				ProductCode:       productCode,
-	// 				Year:              year,
-	// 				SerialNumber:      serialNumber,
-	// 			}
-	// 			c.storage.Create(&value)
-	// 		}
-	// 	}
-	// }
-
-	return applicationNumberList
-}
-
 func (c *kiprisCollector) CreateApplicationNumber(productCode string, year string, serialNumber int) string {
 	result := fmt.Sprintf("%s%s%07d", productCode, year, serialNumber)
 	return result
 }
 
-func (c *kiprisCollector) GetYearLastApplicationNumber(year string) string {
-	lastApplicationNumber := c.storage.GetYearLastApplicationNumber(year)
-	return lastApplicationNumber
-}
+// func (c *kiprisCollector) GetYearLastApplicationNumber(year string) string {
+// 	lastApplicationNumber := c.storage.GetYearLastApplicationNumber(year)
+// 	return lastApplicationNumber
+// }
 
 // Not used
 // func (c *kiprisCollector) GetMidValue(startNumber int, lastNumber int) int {
@@ -547,3 +516,17 @@ func (c *kiprisCollector) GetYearLastApplicationNumber(year string) string {
 
 // 	return false
 // }
+
+// select * from kipris_tasks;
+
+// select * from kipris_application_numbers;
+
+// select * from kipris_collector_histories
+// where is_success = 0;
+
+// select * from kipris_collector_histories
+// where is_success = 1;
+
+// select * from kipris_collector_statuses;
+
+// select * from trade_mark_infos

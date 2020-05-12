@@ -32,7 +32,7 @@ func open(dbType string, dbConnString string) (*gorm.DB, error) {
 
 func migrate(db *gorm.DB) {
 	// KiprisApplicationNumber ==> 이 곳에 appplication number가 등록이 되어있어야 Collector가 수행할 수 있다.
-	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{}, &model.KiprisCollectorStatus{}, &model.KiprisCollectorHistory{}, &model.KiprisApplicationNumber{})
+	db.AutoMigrate(&model.KiprisTask{}, &model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{}, &model.KiprisCollectorStatus{}, &model.KiprisCollectorHistory{}, &model.KiprisApplicationNumber{})
 }
 
 func NewStorage(config types.StorageConfig) (types.Storage, error) {
@@ -70,6 +70,78 @@ func (s *storage) Create(v types.Model) error {
 		return errors.New(fmt.Sprintf("Fail to create data(maybe ApplicationNumber already exist) %v", v))
 	}
 	return nil
+}
+
+func (s *storage) CreateTask(applicationNumbers *[]model.KiprisApplicationNumber) error {
+	return s.db.Transaction(func(tx *gorm.DB) error {
+		task := model.KiprisTask{}
+		if err := tx.Create(&task).Error; err != nil {
+			return err
+		}
+
+		tx.First(&task)
+
+		for _, applicationNumber := range *applicationNumbers {
+			kiprisApplicationNumber := model.KiprisApplicationNumber{
+				ApplicationNumber: applicationNumber.ApplicationNumber,
+				ProductCode:       applicationNumber.ProductCode,
+				Year:              applicationNumber.Year,
+				SerialNumber:      applicationNumber.SerialNumber,
+				TaskId:            task.ID,
+			}
+			if err := tx.Create(&kiprisApplicationNumber).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
+
+func (s *storage) GetTaskList(page int, size int) (*pagination.Paginator, error) {
+	searchResult := make([]model.KiprisTask, 0)
+	tx := s.db
+
+	// tx = tx.Table("kipris_tasks").Where("completed IS NULL")
+	// tx = tx.Table("kipris_tasks").Where("completed IS NOT NULL")
+	tx = tx.Table("kipris_tasks")
+
+	paginator := pagination.Paging(&pagination.Param{
+		DB:      tx,
+		Page:    page,
+		Limit:   size,
+		OrderBy: []string{"id asc"},
+		ShowSQL: true,
+	}, &searchResult)
+
+	return paginator, nil
+}
+
+func (s *storage) GetTaskApplicationNumberList(taskId uint, paginationParams ...int) (*pagination.Paginator, error) {
+	searchResult := make([]model.KiprisApplicationNumber, 0)
+	tx := s.db.Table("kipris_application_numbers").Where("task_id = ?", taskId)
+
+	if len(paginationParams) < 2 {
+		var count int
+		tx.Count(&count)
+		paginatorIns := pagination.Paging(&pagination.Param{
+			DB:      tx,
+			Page:    1,
+			Limit:   count,
+			OrderBy: []string{"id asc"},
+			ShowSQL: true,
+		}, &searchResult)
+		return paginatorIns, nil
+	} else {
+		paginatorIns := pagination.Paging(&pagination.Param{
+			DB:      tx,
+			Page:    paginationParams[0],
+			Limit:   paginationParams[1],
+			OrderBy: []string{"id asc"},
+			ShowSQL: true,
+		}, &searchResult)
+		return paginatorIns, nil
+	}
 }
 
 // About kipris application number

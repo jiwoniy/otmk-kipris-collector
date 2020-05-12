@@ -1,17 +1,26 @@
 package model
 
 import (
+	"time"
+
 	"github.com/go-playground/validator"
 	"github.com/jinzhu/gorm"
 )
 
+type KiprisTask struct {
+	gorm.Model
+	Started   time.Time
+	Completed time.Time
+}
+
 // kipirs aplication number list
 type KiprisApplicationNumber struct {
 	gorm.Model
-	ApplicationNumber string `gorm:"not null;unique;" validate:"required"`
-	ProductCode       string `gorm:"not null;" validate:"required"`
-	Year              string `gorm:"not null;" validate:"required"`
-	SerialNumber      int    `gorm:"not null;" validate:"required"`
+	TaskId            uint   `gorm:"not null;index;" validate:"required"`
+	ApplicationNumber string `gorm:"not null;index;" validate:"required"`
+	ProductCode       string `gorm:"not null;index" validate:"required"`
+	Year              string `gorm:"not null;index" validate:"required"`
+	SerialNumber      int    `gorm:"not null;index" validate:"required"`
 	isExist           bool
 }
 

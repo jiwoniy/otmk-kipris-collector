@@ -37,19 +37,21 @@ type Collector interface {
 	Get(url string, params map[string]string) ([]byte, error)
 
 	// task
-	CreatTask(args TaskParameters) error
+	CreateTask(args TaskParameters) error
 	CreatManualTask(args TaskParameters) error
+	GetTaskList(page int, size int) (*pagination.Paginator, error)
+	GetTaskApplicationNumberList(taskId uint, page int, size int) (*pagination.Paginator, error)
 
 	// crawler
-	StartCrawler(year string, productCode string, startSerialNumber int, endSerialNumber int)
-	CrawlerApplicationNumber(applicationNumber string) bool
+	StartCrawler(taskId uint) error
+	CrawlerApplicationNumber(tx *gorm.DB, applicationNumber string) bool
 
 	// collector helper
-	GetApplicationNumberList(args TaskParameters) (*pagination.Paginator, error)
+	// GetApplicationNumberList(args TaskParameters) (*pagination.Paginator, error)
 
-	CreateApplicationNumberList(year string, length int, startNumber int) []string
-	CreateApplicationNumber(productCode string, year string, serialNumber int) string
-	GetYearLastApplicationNumber(year string) string
+	// CreateApplicationNumberList(year string, length int, startNumber int) []string
+	// CreateApplicationNumber(productCode string, year string, serialNumber int) string
+	// GetYearLastApplicationNumber(year string) string
 
 	// for find application number. but it is useless
 	// GetLastApplicationNumber(startNumber string, LastNumber string, checker func(string) bool) (string, string, error)
@@ -71,7 +73,13 @@ type Parser interface {
 type Storage interface {
 	GetDB() *gorm.DB
 	CloseDB()
+
 	Create(v Model) error
+	CreateTask(applicationNumbers *[]model.KiprisApplicationNumber) error
+
+	GetTaskList(page int, size int) (*pagination.Paginator, error)
+	GetTaskApplicationNumberList(taskId uint, pagination ...int) (*pagination.Paginator, error)
+
 	GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber)
 	GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber, startSerialNumber int, endSerialNumber int, page int, size int) (*pagination.Paginator, error)
 	GetKiprisCollector(v model.KiprisCollectorStatus, data *model.KiprisCollectorStatus)
