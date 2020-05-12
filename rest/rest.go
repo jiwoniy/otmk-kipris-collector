@@ -31,6 +31,9 @@ func setupRouter(app types.Query) *gin.Engine {
 		c.String(http.StatusOK, "pong")
 	})
 
+	// r.GET("/p", func(c *gin.Context) {
+	// 	c.String(http.StatusOK, "pong")
+	// })
 	// r.GET("/ping2", func(c *gin.Context) {
 	// 	data := app.GetApplicationNumber("4020200000001")
 	// 	c.JSON(http.StatusOK, data)

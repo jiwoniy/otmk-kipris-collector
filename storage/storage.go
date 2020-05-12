@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jiwoniy/otmk-kipris-collector/model"
+	"github.com/jiwoniy/otmk-kipris-collector/pagination"
 	"github.com/jiwoniy/otmk-kipris-collector/types"
 
 	"github.com/jinzhu/gorm"
@@ -30,6 +31,7 @@ func open(dbType string, dbConnString string) (*gorm.DB, error) {
 }
 
 func migrate(db *gorm.DB) {
+	// KiprisApplicationNumber ==> 이 곳에 appplication number가 등록이 되어있어야 Collector가 수행할 수 있다.
 	db.AutoMigrate(&model.TradeMarkInfo{}, &model.TrademarkDesignationGoodstInfo{}, &model.KiprisCollectorStatus{}, &model.KiprisCollectorHistory{}, &model.KiprisApplicationNumber{})
 }
 
@@ -70,25 +72,35 @@ func (s *storage) Create(v types.Model) error {
 	return nil
 }
 
+// About kipris application number
 func (s *storage) GetYearLastApplicationNumber(year string) string {
-	// s.db.Where(&v).First(&data)
 	var data model.KiprisApplicationNumber
-	s.db.Table("kipris_application_numbers").Where("year = ?", year).Last(&data)
-	fmt.Println(data.ApplicationNumber)
-	return "ddd"
+	s.db.Table("kipris_application_numbers").Where("year = ?", year).Order("application_number desc").Last(&data)
+	return data.ApplicationNumber
 }
 
 func (s *storage) GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber) {
 	s.db.Where(&v).First(&data)
 }
 
-func (s *storage) GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber, startSerialNumber int, endSerialNumber int) {
-	tx := s.db.Where(&v)
+func (s *storage) GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber, startSerialNumber int, endSerialNumber int, page int, size int) (*pagination.Paginator, error) {
+	tx := s.db
+
 	if startSerialNumber > 0 && endSerialNumber > 0 {
-		tx.Find(&data, "serial_number >= ? AND serial_number <= ?", startSerialNumber, endSerialNumber)
+		tx = tx.Where(&v).Where("serial_number >= ? AND serial_number <= ?", startSerialNumber, endSerialNumber)
 	} else {
-		tx.Find(&data)
+		tx = tx.Where(&v)
 	}
+
+	paginator := pagination.Paging(&pagination.Param{
+		DB:      tx,
+		Page:    page,
+		Limit:   size,
+		OrderBy: []string{"application_number asc"},
+		ShowSQL: true,
+	}, data)
+
+	return paginator, nil
 }
 
 func (s *storage) GetKiprisCollector(v model.KiprisCollectorStatus, data *model.KiprisCollectorStatus) {

@@ -15,7 +15,7 @@ type CollectorTestSuite struct {
 }
 
 func (suite *CollectorTestSuite) SetupTest() {
-	config := CollectorConfig{
+	config := types.CollectorConfig{
 		Endpoint:     "http://plus.kipris.or.kr/openapi/rest",
 		AccessKey:    "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=", // onthe mark key
 		DbType:       "mysql",
@@ -131,18 +131,38 @@ func (suite *CollectorTestSuite) SetupTest() {
 // 	}
 // }
 
-// func (suite *CollectorTestSuite) TestCreatManualTask() {
-
+// func (suite *CollectorTestSuite) TestGetYearLastApplicationNumber() {
+// 	lastApplicationNumber := suite.collector.GetYearLastApplicationNumber("2017")
+// 	fmt.Println(lastApplicationNumber)
 // }
-func (suite *CollectorTestSuite) TestCreatTask() {
-	// param := types.TaskParameters{
-	// 	Year: "2015",
-	// 	// SerialNumberRange: "2,110",
-	// }
-	// err := suite.collector.CreatTask(param)
-	// fmt.Println(err)
-	lastApplicationNumber := suite.collector.GetLastApplicationNumber("2017")
-	fmt.Println(lastApplicationNumber)
+// func (suite *CollectorTestSuite) TestCreatTask() {
+// 	param := types.TaskParameters{
+// 		Year:              "2015",
+// 		SerialNumberRange: "2,3",
+// 	}
+// 	err := suite.collector.CreatTask(param)
+// 	fmt.Println(err)
+// }
+
+// func (suite *CollectorTestSuite) TestCreaManulTask() {
+// 	param := types.TaskParameters{
+// 		ProductCode:       "40",
+// 		Year:              "2015",
+// 		SerialNumberRange: "2,3",
+// 	}
+// 	err := suite.collector.CreatManualTask(param)
+// 	fmt.Println(err)
+// }
+
+func (suite *CollectorTestSuite) TestGetKiprisApplicationNumerList() {
+	param := types.TaskParameters{
+		ProductCode:       "40",
+		Year:              "2017",
+		SerialNumberRange: "1,20",
+	}
+	pagination, err := suite.collector.GetApplicationNumberList(param)
+	fmt.Println(pagination.Data)
+	fmt.Println(err)
 }
 
 // func (suite *CollectorTestSuite) TestCrawler() {
