@@ -114,33 +114,36 @@ func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
 		types.RestMethod{
 			Path: "/tasks",
 			Handler: func(ctx *gin.Context) {
-				ctx.JSON(http.StatusOK, "tasks")
-				// pagination, err := c.GetTaskList(1, 20)
-				// if err != nil {
+				page := ctx.DefaultQuery("page", "1")
+				size := ctx.DefaultQuery("50", "50")
+				pagination, err := c.GetTaskList(page, size)
+				if err != nil {
+					ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				}
 
-				// }
-
-				// param := types.TaskParameters{
-				// 	ProductCode:       "40",
-				// 	Year:              "2017",
-				// 	SerialNumberRange: "1,20",
-				// }
-				// c.GetApplicationNumberList(param)
+				ctx.JSON(http.StatusOK, gin.H{
+					"data":        pagination.Data,
+					"page":        pagination.Page,
+					"nextpage":    pagination.NextPage,
+					"prevpage":    pagination.PrevPage,
+					"totalPage":   pagination.TotalPage,
+					"totalRecord": pagination.TotalRecord,
+				})
 			},
 		},
 		types.RestMethod{
 			Path: "/task/:taskId",
 			Handler: func(ctx *gin.Context) {
 				taskId := ctx.Param("taskId")
-				ctx.JSON(http.StatusOK, fmt.Sprintf("Hello Get %s", taskId))
-				// params := types.TaskParameters{
-				// 	ProductCode:       "40",
-				// 	Year:              "2017",
-				// 	SerialNumberRange: "1,20",
-				// }
-				// pagination, err := c.GetApplicationNumberList(params)
-				// fmt.Println(pagination.Data)
-				// fmt.Println(err)
+				uTaskId, _ := strconv.ParseInt(taskId, 10, 64)
+				data, _ := c.GetTaskById(uTaskId)
+				ctx.JSON(http.StatusOK, gin.H{
+					"id":        data.ID,
+					"createdAt": data.CreatedAt,
+					"updatedAt": data.UpdatedAt,
+					"started":   data.Started,
+					"completed": data.Completed,
+				})
 			},
 		},
 	)
@@ -249,9 +252,25 @@ func (c *kiprisCollector) CreatManualTask(args types.TaskParameters) error {
 	return c.storage.CreateTask(&kiprisApplicationNumbers)
 }
 
-func (c *kiprisCollector) GetTaskList(pageParam int, sizeParam int) (*pagination.Paginator, error) {
-	pagination, err := c.storage.GetTaskList(pageParam, sizeParam)
+func (c *kiprisCollector) GetTaskList(pageParam string, sizeParam string) (*pagination.Paginator, error) {
+	page, err := strconv.Atoi(pageParam)
+	if err != nil {
+		return nil, err
+	}
+	size, err := strconv.Atoi(sizeParam)
+	if err != nil {
+		return nil, err
+	}
+	pagination, err := c.storage.GetTaskList(page, size)
 	return pagination, err
+}
+
+func (c *kiprisCollector) GetTaskById(taskId int64) (model.KiprisTask, error) {
+	task, err := c.storage.GetTaskById(taskId)
+	if err != nil {
+		return model.KiprisTask{}, err
+	}
+	return task, nil
 }
 
 // func (c *kiprisCollector) GetTaskApplicationNumberList(taskId uint, pageParam int, sizeParam int) (*pagination.Paginator, error) {
@@ -278,7 +297,7 @@ func (c *kiprisCollector) GetTaskList(pageParam int, sizeParam int) (*pagination
 // 	return pagination, err
 // }
 
-func (c *kiprisCollector) StartCrawler(taskId uint) error {
+func (c *kiprisCollector) StartCrawler(taskId int64) error {
 	db := c.storage.GetDB()
 	pageSize := 50
 

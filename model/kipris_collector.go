@@ -8,7 +8,10 @@ import (
 )
 
 type KiprisTask struct {
-	gorm.Model
+	ID        int64 `gorm:"primary_key"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time `sql:"index"`
 	Started   time.Time
 	Completed time.Time
 }
@@ -16,7 +19,7 @@ type KiprisTask struct {
 // kipirs aplication number list
 type KiprisApplicationNumber struct {
 	gorm.Model
-	TaskId            uint   `gorm:"not null;index;" validate:"required"`
+	TaskId            int64  `gorm:"not null;index;" validate:"required"`
 	ApplicationNumber string `gorm:"not null;index;" validate:"required"`
 	ProductCode       string `gorm:"not null;index" validate:"required"`
 	Year              string `gorm:"not null;index" validate:"required"`

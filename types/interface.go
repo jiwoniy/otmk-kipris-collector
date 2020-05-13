@@ -41,11 +41,12 @@ type Collector interface {
 	// task
 	CreateTask(args TaskParameters) error
 	CreatManualTask(args TaskParameters) error
-	GetTaskList(page int, size int) (*pagination.Paginator, error)
+	GetTaskList(page string, size string) (*pagination.Paginator, error)
+	GetTaskById(taskId int64) (model.KiprisTask, error)
 	// GetTaskApplicationNumberList(taskId uint, page int, size int) (*pagination.Paginator, error)
 
 	// crawler
-	StartCrawler(taskId uint) error
+	StartCrawler(taskId int64) error
 	CrawlerApplicationNumber(tx *gorm.DB, applicationNumber string) bool
 
 	// collector helper
@@ -80,7 +81,8 @@ type Storage interface {
 	CreateTask(applicationNumbers *[]model.KiprisApplicationNumber) error
 
 	GetTaskList(page int, size int) (*pagination.Paginator, error)
-	GetTaskApplicationNumberList(tx *gorm.DB, taskId uint, pagination ...int) (*pagination.Paginator, error)
+	GetTaskById(taskId int64) (model.KiprisTask, error)
+	GetTaskApplicationNumberList(tx *gorm.DB, taskId int64, pagination ...int) (*pagination.Paginator, error)
 
 	// GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber)
 	// GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber, startSerialNumber int, endSerialNumber int, page int, size int) (*pagination.Paginator, error)

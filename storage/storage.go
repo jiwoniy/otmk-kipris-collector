@@ -102,6 +102,7 @@ func (s *storage) GetTaskList(page int, size int) (*pagination.Paginator, error)
 	searchResult := make([]model.KiprisTask, 0)
 	tx := s.db
 
+	// TODO
 	// tx = tx.Table("kipris_tasks").Where("completed IS NULL")
 	// tx = tx.Table("kipris_tasks").Where("completed IS NOT NULL")
 	tx = tx.Table("kipris_tasks")
@@ -117,7 +118,16 @@ func (s *storage) GetTaskList(page int, size int) (*pagination.Paginator, error)
 	return paginator, nil
 }
 
-func (s *storage) GetTaskApplicationNumberList(tx *gorm.DB, taskId uint, paginationParams ...int) (*pagination.Paginator, error) {
+func (s *storage) GetTaskById(taskId int64) (model.KiprisTask, error) {
+	currentTask := model.KiprisTask{}
+
+	if err := s.db.Table("kipris_tasks").Where("id = ?", taskId).First(&currentTask).Error; err != nil {
+		return currentTask, fmt.Errorf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
+	}
+	return currentTask, nil
+}
+
+func (s *storage) GetTaskApplicationNumberList(tx *gorm.DB, taskId int64, paginationParams ...int) (*pagination.Paginator, error) {
 	searchResult := make([]model.KiprisApplicationNumber, 0)
 	tx.Table("kipris_application_numbers").Where("task_id = ?", taskId)
 
