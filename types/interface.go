@@ -80,8 +80,8 @@ type Storage interface {
 	GetTaskList(page int, size int) (*pagination.Paginator, error)
 	GetTaskApplicationNumberList(tx *gorm.DB, taskId uint, pagination ...int) (*pagination.Paginator, error)
 
-	GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber)
-	GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber, startSerialNumber int, endSerialNumber int, page int, size int) (*pagination.Paginator, error)
+	// GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber)
+	// GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber, startSerialNumber int, endSerialNumber int, page int, size int) (*pagination.Paginator, error)
 	GetKiprisCollector(v model.KiprisCollectorStatus, data *model.KiprisCollectorStatus)
 	GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkInfo)
 	GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *[]model.TrademarkDesignationGoodstInfo)

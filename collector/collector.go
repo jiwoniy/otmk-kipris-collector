@@ -252,37 +252,26 @@ func (c *kiprisCollector) GetTaskList(pageParam int, sizeParam int) (*pagination
 
 func (c *kiprisCollector) StartCrawler(taskId uint) error {
 	db := c.storage.GetDB()
+	pageSize := 50
 
 	currentTask := model.KiprisTask{}
+
 	if err := db.Table("kipris_tasks").Where("id = ?", taskId).First(&currentTask).Error; err != nil {
-		log.Printf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
-		return err
+		collectLogger.Printf("[StartCrawler Task Id] %d Step 1 - Get Task (error: %s)", taskId, err)
+		return fmt.Errorf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
 	}
 
 	if err := db.Model(&currentTask).Update("started", time.Now()).Error; err != nil {
-		log.Printf("[StartCrawler Task Id] %d Step 2 - Update Task started Date", taskId)
-		return err
+		collectLogger.Printf("[StartCrawler Task Id] %d Step 2 - Update Task started Date (error: %s)", taskId, err)
+		return fmt.Errorf("[StartCrawler Task Id] %d Step 2 - Update Task started Date", taskId)
 	}
 
-	pageSize := 50
-
 	return db.Transaction(func(tx *gorm.DB) error {
-		// currentTask := model.KiprisTask{}
-		// if err := tx.Table("kipris_tasks").Where("id = ?", taskId).First(&currentTask).Error; err != nil {
-		// 	log.Printf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
-		// 	return err
-		// }
-
-		// if err := tx.Model(&currentTask).Update("started", time.Now()).Error; err != nil {
-		// 	log.Printf("[StartCrawler Task Id] %d Step 2 - Update Task started Date", taskId)
-		// 	return err
-		// }
-
 		pagination, err := c.storage.GetTaskApplicationNumberList(tx, taskId, 1, pageSize)
 
 		if err != nil {
-			log.Printf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number", taskId)
-			return err
+			collectLogger.Printf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number (error: %s)", taskId, err)
+			return fmt.Errorf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number", taskId)
 		}
 
 		for currentPage := pagination.Page; currentPage <= pagination.TotalPage; currentPage++ {
@@ -298,11 +287,15 @@ func (c *kiprisCollector) StartCrawler(taskId uint) error {
 			wg.Wait()
 
 			pagination, err = c.storage.GetTaskApplicationNumberList(tx, taskId, currentPage+1, pageSize)
+			if err != nil {
+				collectLogger.Printf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number (error: %s)", taskId, err)
+				return fmt.Errorf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number", taskId)
+			}
 		}
 
 		if err := tx.Model(&currentTask).Update("completed", time.Now()).Error; err != nil {
-			log.Printf("[StartCrawler Task Id] %d Step 4 - Update Task completed Date", taskId)
-			return err
+			collectLogger.Printf("[StartCrawler Task Id] %d Step 4 - Update Task completed Date (error: %s)", taskId, err)
+			return fmt.Errorf("[StartCrawler Task Id] %d Step 4 - Update Task completed Date", taskId)
 		}
 		return nil
 	})
@@ -314,15 +307,9 @@ func (c *kiprisCollector) saveKiprisCollectorHistory(tx *gorm.DB, applicationNum
 		IsSuccess:         isSuccess,
 		Error:             Error,
 	}
-	// if Error == "" {
-	// 	log.Printf("[Success ApplicationNumber] %s", applicationNumber)
-	// } else {
-	// 	log.Printf("[Fail ApplicationNumber] %s (error: %s)", applicationNumber, Error)
-	// }
 	err := tx.Create(&history)
 	if err != nil {
-		log.Printf("[Save History ApplicationNumber] %s (error: %s)", applicationNumber, Error)
-		// collectLogger.Printf("[ApplicationNumber] %s (error: %s)", applicationNumber, Error)
+		collectLogger.Printf("[ApplicationNumber] %s (error: %s)", applicationNumber, Error)
 	}
 }
 
@@ -331,22 +318,36 @@ func getKiprisTradeMarkInfo(c *kiprisCollector, applicationNumber string) (*mode
 		"applicationNumber": applicationNumber,
 		"accessKey":         c.GetAccessKey(),
 	}
+
 	content, err := c.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
 	if err != nil {
-		return nil, fmt.Sprint("[GET TradeMarkInfo] applicationNumberSearchInfo request step")
+		return nil, fmt.Sprintf("[GET TradeMarkInfo %s] applicationNumberSearchInfo request step", applicationNumber)
 	}
 
 	var tradeMarkInfo model.KiprisResponse
 	err = c.parser.Parse(content, &tradeMarkInfo)
 
 	if err != nil {
-		return nil, fmt.Sprint("[GET TradeMarkInfo] applicationNumberSearchInfo parsing step")
+		return nil, fmt.Sprintf("[GET TradeMarkInfo %s] applicationNumberSearchInfo parsing step", applicationNumber)
 	}
 
 	if tradeMarkInfo.Result() == model.Success {
 		return &tradeMarkInfo, ""
 	} else {
-		return nil, fmt.Sprintf("[GET TradeMarkInfo] applicationNumberSearchInfo response %d", tradeMarkInfo.Result())
+		return nil, fmt.Sprintf("[GET TradeMarkInfo %s] applicationNumberSearchInfo response %s", applicationNumber, getKiprisRequestResult(tradeMarkInfo.Result()))
+	}
+}
+
+func getKiprisRequestResult(result model.KiprisResponseStatus) string {
+	switch result {
+	case model.Empty:
+		return "Empty ApplicationNumber"
+	case model.Error:
+		return "Request Error"
+	case model.Success:
+		return "Request Success"
+	default:
+		return "None"
 	}
 }
 
@@ -358,19 +359,19 @@ func getTrademarkDesignationGoodstInfo(c *kiprisCollector, applicationNumber str
 
 	content, err := c.Get("/trademarkInfoSearchService/trademarkDesignationGoodstInfo", params)
 	if err != nil {
-		return nil, fmt.Sprint("[GET TrademarkDesignationGoodstInfo] trademarkDesignationGoodstInfo request step")
+		return nil, fmt.Sprintf("[GET TrademarkDesignationGoodstInfo %s] trademarkDesignationGoodstInfo request step", applicationNumber)
 	}
 
 	var trademarkDesignationGoodstInfo model.KiprisResponse
 	err = c.parser.Parse(content, &trademarkDesignationGoodstInfo)
 	if err != nil {
-		return nil, fmt.Sprint("[GET TrademarkDesignationGoodstInfo] trademarkDesignationGoodstInfo pasring step")
+		return nil, fmt.Sprintf("[GET TrademarkDesignationGoodstInfo %s] trademarkDesignationGoodstInfo pasring step", applicationNumber)
 	}
 
 	if trademarkDesignationGoodstInfo.Result() == model.Success {
 		return &trademarkDesignationGoodstInfo, ""
 	} else {
-		return nil, fmt.Sprintf("[GET TrademarkDesignationGoodstInfo] trademarkDesignationGoodstInfo response %d", trademarkDesignationGoodstInfo.Result())
+		return nil, fmt.Sprintf("[GET TrademarkDesignationGoodstInfo %s] trademarkDesignationGoodstInfo response %s", applicationNumber, getKiprisRequestResult(trademarkDesignationGoodstInfo.Result()))
 	}
 }
 
@@ -402,17 +403,6 @@ func (c *kiprisCollector) CrawlerApplicationNumber(tx *gorm.DB, applicationNumbe
 			return false
 		}
 	}
-
-	// var wg sync.WaitGroup
-	// for _, application := range *data {
-	// 	wg.Add(1)
-	// 	go func(appNumber string) {
-	// 		defer wg.Done()
-	// 		fmt.Println(appNumber)
-	// 		// c.CrawlerApplicationNumber(tx, appNumber)
-	// 	}(application.ApplicationNumber)
-	// }
-	// wg.Wait()
 
 	statistic := model.KiprisCollectorStatus{
 		ApplicationNumber:                  applicationNumber,

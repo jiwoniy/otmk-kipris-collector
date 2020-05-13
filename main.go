@@ -38,7 +38,7 @@ func main() {
 
 	application := app.NewApplication(collectorInstance)
 	restConfig := types.RestConfig{
-		ListenAddr: ":8085",
+		ListenAddr: ":8080",
 	}
 	app.StartApplication(application, restConfig)
 }

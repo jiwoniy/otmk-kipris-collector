@@ -151,29 +151,29 @@ func (s *storage) GetYearLastApplicationNumber(year string) string {
 	return data.ApplicationNumber
 }
 
-func (s *storage) GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber) {
-	s.db.Where(&v).First(&data)
-}
+// func (s *storage) GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber) {
+// 	s.db.Where(&v).First(&data)
+// }
 
-func (s *storage) GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber, startSerialNumber int, endSerialNumber int, page int, size int) (*pagination.Paginator, error) {
-	tx := s.db
+// func (s *storage) GetKiprisApplicationNumberList(v model.KiprisApplicationNumber, data *[]model.KiprisApplicationNumber, startSerialNumber int, endSerialNumber int, page int, size int) (*pagination.Paginator, error) {
+// 	tx := s.db
 
-	if startSerialNumber > 0 && endSerialNumber > 0 {
-		tx = tx.Where(&v).Where("serial_number >= ? AND serial_number <= ?", startSerialNumber, endSerialNumber)
-	} else {
-		tx = tx.Where(&v)
-	}
+// 	if startSerialNumber > 0 && endSerialNumber > 0 {
+// 		tx = tx.Where(&v).Where("serial_number >= ? AND serial_number <= ?", startSerialNumber, endSerialNumber)
+// 	} else {
+// 		tx = tx.Where(&v)
+// 	}
 
-	paginator := pagination.Paging(&pagination.Param{
-		DB:      tx,
-		Page:    page,
-		Limit:   size,
-		OrderBy: []string{"application_number asc"},
-		ShowSQL: true,
-	}, data)
+// 	paginator := pagination.Paging(&pagination.Param{
+// 		DB:      tx,
+// 		Page:    page,
+// 		Limit:   size,
+// 		OrderBy: []string{"application_number asc"},
+// 		ShowSQL: true,
+// 	}, data)
 
-	return paginator, nil
-}
+// 	return paginator, nil
+// }
 
 func (s *storage) GetKiprisCollector(v model.KiprisCollectorStatus, data *model.KiprisCollectorStatus) {
 	s.db.Where(&v).Find(&data)
