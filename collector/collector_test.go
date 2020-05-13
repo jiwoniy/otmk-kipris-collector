@@ -137,8 +137,8 @@ func (suite *CollectorTestSuite) SetupTest() {
 // }
 // func (suite *CollectorTestSuite) TestCreatTask() {
 // 	param := types.TaskParameters{
-// 		Year:              "2019",
-// 		SerialNumberRange: "1,100",
+// 		Year: "2020",
+// 		// SerialNumberRange: "1,1000",
 // 	}
 // 	err := suite.collector.CreateTask(param)
 // 	fmt.Println(err)

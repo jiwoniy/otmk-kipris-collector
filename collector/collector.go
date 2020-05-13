@@ -8,9 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
-	// "sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -227,10 +226,10 @@ func (c *kiprisCollector) GetTaskList(pageParam int, sizeParam int) (*pagination
 	return pagination, err
 }
 
-func (c *kiprisCollector) GetTaskApplicationNumberList(taskId uint, pageParam int, sizeParam int) (*pagination.Paginator, error) {
-	pagination, err := c.storage.GetTaskApplicationNumberList(taskId, pageParam, sizeParam)
-	return pagination, err
-}
+// func (c *kiprisCollector) GetTaskApplicationNumberList(taskId uint, pageParam int, sizeParam int) (*pagination.Paginator, error) {
+// 	pagination, err := c.storage.GetTaskApplicationNumberList(taskId, pageParam, sizeParam)
+// 	return pagination, err
+// }
 
 // func (c *kiprisCollector) GetApplicationNumberList(args types.TaskParameters) (*pagination.Paginator, error) {
 // 	searchResult := make([]model.KiprisApplicationNumber, 0)
@@ -251,47 +250,60 @@ func (c *kiprisCollector) GetTaskApplicationNumberList(taskId uint, pageParam in
 // 	return pagination, err
 // }
 
-// product string, year string, length int, startNumber int
 func (c *kiprisCollector) StartCrawler(taskId uint) error {
-	// TODO paging 처리해서 GoGo (100개씩)
-	result := make([]model.KiprisApplicationNumber, 0)
 	db := c.storage.GetDB()
 
+	currentTask := model.KiprisTask{}
+	if err := db.Table("kipris_tasks").Where("id = ?", taskId).First(&currentTask).Error; err != nil {
+		log.Printf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
+		return err
+	}
+
+	if err := db.Model(&currentTask).Update("started", time.Now()).Error; err != nil {
+		log.Printf("[StartCrawler Task Id] %d Step 2 - Update Task started Date", taskId)
+		return err
+	}
+
+	pageSize := 50
+
 	return db.Transaction(func(tx *gorm.DB) error {
-		currentTask := model.KiprisTask{}
-		if err := tx.Table("kipris_tasks").Where("id = ?", taskId).First(&currentTask).Error; err != nil {
-			// log.Printf("[StartCrawler Task Id] %d Step 1 (error: %s)", taskId, err)
-			log.Printf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
-			// fmt.Errorf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
-			return err
-		}
+		// currentTask := model.KiprisTask{}
+		// if err := tx.Table("kipris_tasks").Where("id = ?", taskId).First(&currentTask).Error; err != nil {
+		// 	log.Printf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
+		// 	return err
+		// }
 
-		if err := tx.Model(&currentTask).Update("started", time.Now()).Error; err != nil {
-			// log.Printf("[StartCrawler Task Id] %d Step 2 (error: %s)", taskId, err)
-			log.Printf("[StartCrawler Task Id] %d Step 2 - Update Task started Date", taskId)
-			return err
-		}
+		// if err := tx.Model(&currentTask).Update("started", time.Now()).Error; err != nil {
+		// 	log.Printf("[StartCrawler Task Id] %d Step 2 - Update Task started Date", taskId)
+		// 	return err
+		// }
 
-		if err := tx.Table("kipris_application_numbers").Where("task_id = ?", taskId).Find(&result).Error; err != nil {
+		pagination, err := c.storage.GetTaskApplicationNumberList(tx, taskId, 1, pageSize)
+
+		if err != nil {
 			log.Printf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number", taskId)
 			return err
 		}
 
-		var wg sync.WaitGroup
-		for _, application := range result {
-			wg.Add(1)
-			go func(appNumber string) {
-				defer wg.Done()
-				c.CrawlerApplicationNumber(tx, appNumber)
-			}(application.ApplicationNumber)
+		for currentPage := pagination.Page; currentPage <= pagination.TotalPage; currentPage++ {
+			data := pagination.Data.(*[]model.KiprisApplicationNumber)
+			var wg sync.WaitGroup
+			for _, application := range *data {
+				wg.Add(1)
+				go func(appNumber string) {
+					defer wg.Done()
+					c.CrawlerApplicationNumber(tx, appNumber)
+				}(application.ApplicationNumber)
+			}
+			wg.Wait()
+
+			pagination, err = c.storage.GetTaskApplicationNumberList(tx, taskId, currentPage+1, pageSize)
 		}
-		wg.Wait()
 
 		if err := tx.Model(&currentTask).Update("completed", time.Now()).Error; err != nil {
 			log.Printf("[StartCrawler Task Id] %d Step 4 - Update Task completed Date", taskId)
 			return err
 		}
-
 		return nil
 	})
 }
@@ -362,7 +374,7 @@ func getTrademarkDesignationGoodstInfo(c *kiprisCollector, applicationNumber str
 	}
 }
 
-// 병렬처리
+// TODO paralle
 func (c *kiprisCollector) CrawlerApplicationNumber(tx *gorm.DB, applicationNumber string) bool {
 	tradeMarkInfo, errString := getKiprisTradeMarkInfo(c, applicationNumber)
 
@@ -390,6 +402,17 @@ func (c *kiprisCollector) CrawlerApplicationNumber(tx *gorm.DB, applicationNumbe
 			return false
 		}
 	}
+
+	// var wg sync.WaitGroup
+	// for _, application := range *data {
+	// 	wg.Add(1)
+	// 	go func(appNumber string) {
+	// 		defer wg.Done()
+	// 		fmt.Println(appNumber)
+	// 		// c.CrawlerApplicationNumber(tx, appNumber)
+	// 	}(application.ApplicationNumber)
+	// }
+	// wg.Wait()
 
 	statistic := model.KiprisCollectorStatus{
 		ApplicationNumber:                  applicationNumber,

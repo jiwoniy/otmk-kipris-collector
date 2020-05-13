@@ -117,9 +117,9 @@ func (s *storage) GetTaskList(page int, size int) (*pagination.Paginator, error)
 	return paginator, nil
 }
 
-func (s *storage) GetTaskApplicationNumberList(taskId uint, paginationParams ...int) (*pagination.Paginator, error) {
+func (s *storage) GetTaskApplicationNumberList(tx *gorm.DB, taskId uint, paginationParams ...int) (*pagination.Paginator, error) {
 	searchResult := make([]model.KiprisApplicationNumber, 0)
-	tx := s.db.Table("kipris_application_numbers").Where("task_id = ?", taskId)
+	tx.Table("kipris_application_numbers").Where("task_id = ?", taskId)
 
 	if len(paginationParams) < 2 {
 		var count int
