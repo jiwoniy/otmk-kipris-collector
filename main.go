@@ -17,8 +17,8 @@ package main
 
 import (
 	"github.com/jiwoniy/otmk-kipris-collector/app"
-	"github.com/jiwoniy/otmk-kipris-collector/collector"
-	"github.com/jiwoniy/otmk-kipris-collector/types"
+	"github.com/jiwoniy/otmk-kipris-collector/kipris/collector"
+	"github.com/jiwoniy/otmk-kipris-collector/kipris/types"
 )
 
 func main() {

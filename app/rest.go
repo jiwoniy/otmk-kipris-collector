@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/jiwoniy/otmk-kipris-collector/types"
+	"github.com/jiwoniy/otmk-kipris-collector/kipris/types"
 )
 
 func restHandler(fn func(ctx *gin.Context)) gin.HandlerFunc {

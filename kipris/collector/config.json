@@ -1,0 +1,5 @@
+{
+  "endpoint": "http://plus.kipris.or.kr/openapi/rest",
+  "access_key": "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
+  "listen_addr": ":8082"
+}

@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/jiwoniy/otmk-kipris-collector/types"
+	"github.com/jiwoniy/otmk-kipris-collector/kipris/types"
 )
 
 type Application struct {

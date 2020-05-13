@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+    <header>
+        <resultCode></resultCode>
+        <resultMsg></resultMsg>
+    </header>
+    <body>
+        <items>
+            <TotalSearchCount>1</TotalSearchCount>
+            <TradeMarkInfo>
+                <SerialNumber>1</SerialNumber>
+                <ApplicationNumber>4020190000011</ApplicationNumber>
+                <AppReferenceNumber> </AppReferenceNumber>
+                <ApplicationDate>20190101</ApplicationDate>
+                <PublicNumber>4020190084686</PublicNumber>
+                <PublicDate>20190731</PublicDate>
+                <RegistrationPublicNumber>4020190125782</RegistrationPublicNumber>
+                <RegistrationPublicDate>20191230</RegistrationPublicDate>
+                <RegistrationNumber>4015569910000</RegistrationNumber>
+                <RegReferenceNumber> </RegReferenceNumber>
+                <RegistrationDate>20191223</RegistrationDate>
+                <PriorityClaimNumber></PriorityClaimNumber>
+                <PriorityClaimDate></PriorityClaimDate>
+                <ApplicationStatus>등록</ApplicationStatus>
+                <GoodClassificationCode>43</GoodClassificationCode>
+                <ViennaCode></ViennaCode>
+                <ApplicantName>김현호</ApplicantName>
+                <AgentName></AgentName>
+                <RegistrationRightholderName>김현호 kimHyunHo</RegistrationRightholderName>
+                <Title>돈퍼</Title>
+                <FulltextExistFlag>Y</FulltextExistFlag>
+                <ImagePath>http://plus.kipris.or.kr/kiprisplusws/fileToss.jsp?arg=ed43a0609e94d6e251697a9d72a9134435594e3384b42e76c0c1194596d9ce713eab8b480c0bac7f959eac6a27cc4b4806ef5b7e099c903d</ImagePath>
+                <ThumbnailPath>http://plus.kipris.or.kr/kiprisplusws/fileToss.jsp?arg=ad7a17eeeef6e4ea4b5e22ef00dd3e293e70a322c3ead7b643de6089e8a3e092c32a212d34313535ec88eb55c218f60067d17b9d393c7bf1</ThumbnailPath>
+            </TradeMarkInfo>
+        </items>
+    </body>
+</response>

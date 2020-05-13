@@ -1,0 +1,4 @@
+{
+    "dbType": "sqlite3",
+    "dbConnString": "./test.db"
+  }
