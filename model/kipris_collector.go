@@ -29,6 +29,7 @@ type KiprisApplicationNumber struct {
 
 type KiprisCollectorStatus struct {
 	gorm.Model
+	TaskId                             int64                `gorm:"not null;index;" validate:"required"`
 	ApplicationNumber                  string               `gorm:"not null;" validate:"required"`
 	TradeMarkInfoStatus                KiprisResponseStatus `validate:"required"`
 	TradeMarkDesignationGoodInfoStatus KiprisResponseStatus `validate:"required"`
@@ -37,6 +38,7 @@ type KiprisCollectorStatus struct {
 type KiprisCollectorHistory struct {
 	gorm.Model
 	ApplicationNumber string `gorm:"not null;" validate:"required"`
+	TaskId            int64  `gorm:"not null;index;" validate:"required"`
 	IsSuccess         bool
 	Error             string
 }

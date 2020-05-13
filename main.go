@@ -26,7 +26,7 @@ func main() {
 
 	config := types.CollectorConfig{
 		Endpoint:     "http://plus.kipris.or.kr/openapi/rest",
-		AccessKey:    "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
+		AccessKey:    "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=",
 		DbType:       "sqlite3",
 		DbConnString: "./test.db",
 		// DbType:       "mysql",

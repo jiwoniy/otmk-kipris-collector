@@ -162,7 +162,6 @@ func (c *kiprisCollector) PostMethods() ([]types.RestMethod, error) {
 					return
 				}
 
-				fmt.Println(param)
 				err := c.CreateTask(param)
 				if err != nil {
 					writeError(ctx, err)
@@ -182,13 +181,13 @@ func (c *kiprisCollector) PostMethods() ([]types.RestMethod, error) {
 				data, _ := c.GetTaskById(uTaskId)
 				if data.ID == 0 {
 					ctx.String(http.StatusOK, "not exists taskId")
+					return
 				} else {
-					err := c.StartCrawler(uTaskId)
-					if err != nil {
-						writeError(ctx, err)
-					} else {
-						ctx.String(http.StatusOK, fmt.Sprintf("start task %s", taskId))
-					}
+					go func() {
+						c.StartCrawler(uTaskId)
+					}()
+					ctx.String(http.StatusOK, fmt.Sprintf("start task %s", taskId))
+
 				}
 			},
 		},
@@ -304,30 +303,6 @@ func (c *kiprisCollector) GetTaskById(taskId int64) (model.KiprisTask, error) {
 	return task, nil
 }
 
-// func (c *kiprisCollector) GetTaskApplicationNumberList(taskId uint, pageParam int, sizeParam int) (*pagination.Paginator, error) {
-// 	pagination, err := c.storage.GetTaskApplicationNumberList(taskId, pageParam, sizeParam)
-// 	return pagination, err
-// }
-
-// func (c *kiprisCollector) GetApplicationNumberList(args types.TaskParameters) (*pagination.Paginator, error) {
-// 	searchResult := make([]model.KiprisApplicationNumber, 0)
-// 	searchData := model.KiprisApplicationNumber{
-// 		Year:        args.Year,
-// 		ProductCode: args.ProductCode,
-// 	}
-
-// 	startSerialNumber := 0
-// 	endSerialNumber := 0
-// 	serialRangeList := strings.Split(args.SerialNumberRange, ",")
-// 	if len(serialRangeList) == 2 {
-// 		startSerialNumber, _ = strconv.Atoi(serialRangeList[0])
-// 		endSerialNumber, _ = strconv.Atoi(serialRangeList[1])
-// 	}
-
-// 	pagination, err := c.storage.GetKiprisApplicationNumberList(searchData, &searchResult, startSerialNumber, endSerialNumber, args.Page, args.Size)
-// 	return pagination, err
-// }
-
 func (c *kiprisCollector) StartCrawler(taskId int64) error {
 	db := c.storage.GetDB()
 	pageSize := 50
@@ -339,51 +314,60 @@ func (c *kiprisCollector) StartCrawler(taskId int64) error {
 		return fmt.Errorf("[StartCrawler Task Id] %d Step 1 - Get Task", taskId)
 	}
 
-	if err := db.Model(&currentTask).Update("started", time.Now()).Error; err != nil {
+	if err := db.Model(&currentTask).Update("startedAt", time.Now()).Error; err != nil {
 		collectLogger.Printf("[StartCrawler Task Id] %d Step 2 - Update Task started Date (error: %s)", taskId, err)
 		return fmt.Errorf("[StartCrawler Task Id] %d Step 2 - Update Task started Date", taskId)
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		pagination, err := c.storage.GetTaskApplicationNumberList(tx, taskId, 1, pageSize)
+		paginationOut, err := c.storage.GetTaskApplicationNumberList(tx, taskId, 1, pageSize)
 
 		if err != nil {
 			collectLogger.Printf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number (error: %s)", taskId, err)
 			return fmt.Errorf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number", taskId)
 		}
 
-		for currentPage := pagination.Page; currentPage <= pagination.TotalPage; currentPage++ {
-			data := pagination.Data.(*[]model.KiprisApplicationNumber)
-			var wg sync.WaitGroup
-			for _, application := range *data {
-				wg.Add(1)
-				go func(appNumber string) {
-					defer wg.Done()
-					c.CrawlerApplicationNumber(tx, appNumber)
-				}(application.ApplicationNumber)
-			}
-			wg.Wait()
+		var wgOut sync.WaitGroup
+		for currentPage := paginationOut.Page; currentPage <= paginationOut.TotalPage; currentPage++ {
+			wgOut.Wait()
+			wgOut.Add(1)
 
-			pagination, err = c.storage.GetTaskApplicationNumberList(tx, taskId, currentPage+1, pageSize)
+			paginationIn, err := c.storage.GetTaskApplicationNumberList(tx, taskId, currentPage, pageSize)
 			if err != nil {
 				collectLogger.Printf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number (error: %s)", taskId, err)
 				return fmt.Errorf("[StartCrawler Task Id] %d Step 3 - Get Task Application Number", taskId)
 			}
+
+			data := paginationIn.Data.(*[]model.KiprisApplicationNumber)
+			var wg sync.WaitGroup
+			for _, application := range *data {
+				wg.Add(1)
+				go func(appNumber string) {
+					c.CrawlerApplicationNumber(tx, taskId, appNumber)
+					defer wg.Done()
+				}(application.ApplicationNumber)
+			}
+			wg.Wait()
+
+			wgOut.Done()
 		}
 
-		if err := tx.Model(&currentTask).Update("completed", time.Now()).Error; err != nil {
+		if err := tx.Model(&currentTask).Update("completedAt", time.Now()).Error; err != nil {
 			collectLogger.Printf("[StartCrawler Task Id] %d Step 4 - Update Task completed Date (error: %s)", taskId, err)
 			return fmt.Errorf("[StartCrawler Task Id] %d Step 4 - Update Task completed Date", taskId)
 		}
+
+		fmt.Println("Good boy")
 		return nil
 	})
 }
 
-func (c *kiprisCollector) saveKiprisCollectorHistory(tx *gorm.DB, applicationNumber string, isSuccess bool, Error string) {
+func (c *kiprisCollector) saveKiprisCollectorHistory(tx *gorm.DB, taskId int64, applicationNumber string, isSuccess bool, Error string) {
 	history := model.KiprisCollectorHistory{
 		ApplicationNumber: applicationNumber,
 		IsSuccess:         isSuccess,
 		Error:             Error,
+		TaskId:            taskId,
 	}
 	err := tx.Create(&history)
 	if err != nil {
@@ -454,46 +438,47 @@ func getTrademarkDesignationGoodstInfo(c *kiprisCollector, applicationNumber str
 }
 
 // TODO paralle
-func (c *kiprisCollector) CrawlerApplicationNumber(tx *gorm.DB, applicationNumber string) bool {
+func (c *kiprisCollector) CrawlerApplicationNumber(tx *gorm.DB, taskId int64, applicationNumber string) bool {
 	tradeMarkInfo, errString := getKiprisTradeMarkInfo(c, applicationNumber)
 
 	if errString != "" {
-		c.saveKiprisCollectorHistory(tx, applicationNumber, false, errString)
+		c.saveKiprisCollectorHistory(tx, taskId, applicationNumber, false, errString)
 		return false
 	}
 
 	trademarkDesignationGoodstInfo, errString := getTrademarkDesignationGoodstInfo(c, applicationNumber)
 
 	if errString != "" {
-		c.saveKiprisCollectorHistory(tx, applicationNumber, false, errString)
+		c.saveKiprisCollectorHistory(tx, taskId, applicationNumber, false, errString)
 		return false
 	}
 
 	if err := tx.Create(&tradeMarkInfo.Body.Items.TradeMarkInfo).Error; err != nil {
-		c.saveKiprisCollectorHistory(tx, applicationNumber, false, err.Error())
+		c.saveKiprisCollectorHistory(tx, taskId, applicationNumber, false, err.Error())
 		return false
 	}
 
 	for _, good := range trademarkDesignationGoodstInfo.Body.Items.TrademarkDesignationGoodstInfo {
 		good.ApplicationNumber = applicationNumber
 		if err := tx.Create(&good).Error; err != nil {
-			c.saveKiprisCollectorHistory(tx, applicationNumber, false, err.Error())
+			c.saveKiprisCollectorHistory(tx, taskId, applicationNumber, false, err.Error())
 			return false
 		}
 	}
 
 	statistic := model.KiprisCollectorStatus{
 		ApplicationNumber:                  applicationNumber,
+		TaskId:                             taskId,
 		TradeMarkInfoStatus:                tradeMarkInfo.Result(),
 		TradeMarkDesignationGoodInfoStatus: trademarkDesignationGoodstInfo.Result(),
 	}
 
 	if err := tx.Create(&statistic).Error; err != nil {
-		c.saveKiprisCollectorHistory(tx, applicationNumber, false, err.Error())
+		c.saveKiprisCollectorHistory(tx, taskId, applicationNumber, false, err.Error())
 		return false
 	}
 
-	c.saveKiprisCollectorHistory(tx, applicationNumber, true, "")
+	c.saveKiprisCollectorHistory(tx, taskId, applicationNumber, true, "")
 
 	return true
 }

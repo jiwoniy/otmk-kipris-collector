@@ -31,7 +31,7 @@ type Collector interface {
 
 	// crawler
 	StartCrawler(taskId int64) error
-	CrawlerApplicationNumber(tx *gorm.DB, applicationNumber string) bool
+	CrawlerApplicationNumber(tx *gorm.DB, taskId int64, applicationNumber string) bool
 
 	// collector helper
 	// GetApplicationNumberList(args TaskParameters) (*pagination.Paginator, error)
