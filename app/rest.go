@@ -20,8 +20,12 @@ func setupRouter(app types.RestClient) *gin.Engine {
 	})
 
 	getMethods, _ := app.GetMethods()
+	postMethods, _ := app.PostMethods()
 	for _, restMethod := range getMethods {
 		r.GET(restMethod.Path, restHandler(restMethod.Handler))
+	}
+	for _, restMethod := range postMethods {
+		r.POST(restMethod.Path, restHandler(restMethod.Handler))
 	}
 
 	return r

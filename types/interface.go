@@ -24,11 +24,13 @@ type TaskParameters struct {
 
 type RestClient interface {
 	GetMethods() ([]RestMethod, error)
+	PostMethods() ([]RestMethod, error)
 }
 
 type Collector interface {
 	// for rest client
 	GetMethods() ([]RestMethod, error)
+	PostMethods() ([]RestMethod, error)
 
 	GetEndpoint() string
 	GetAccessKey() string

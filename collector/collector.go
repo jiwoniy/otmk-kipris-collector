@@ -106,8 +106,20 @@ func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
 	restMethods := make([]types.RestMethod, 1)
 	restMethods = append(restMethods,
 		types.RestMethod{
-			Path: "/search",
+			Path: "/ping",
 			Handler: func(ctx *gin.Context) {
+				ctx.String(http.StatusOK, "pong")
+			},
+		},
+		types.RestMethod{
+			Path: "/tasks",
+			Handler: func(ctx *gin.Context) {
+				ctx.JSON(http.StatusOK, "tasks")
+				// pagination, err := c.GetTaskList(1, 20)
+				// if err != nil {
+
+				// }
+
 				// param := types.TaskParameters{
 				// 	ProductCode:       "40",
 				// 	Year:              "2017",
@@ -117,14 +129,10 @@ func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
 			},
 		},
 		types.RestMethod{
-			Path: "/ping",
+			Path: "/task/:taskId",
 			Handler: func(ctx *gin.Context) {
-				ctx.String(http.StatusOK, "pong")
-			},
-		},
-		types.RestMethod{
-			Path: "/applicationNumbers",
-			Handler: func(ctx *gin.Context) {
+				taskId := ctx.Param("taskId")
+				ctx.JSON(http.StatusOK, fmt.Sprintf("Hello Get %s", taskId))
 				// params := types.TaskParameters{
 				// 	ProductCode:       "40",
 				// 	Year:              "2017",
@@ -133,6 +141,26 @@ func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
 				// pagination, err := c.GetApplicationNumberList(params)
 				// fmt.Println(pagination.Data)
 				// fmt.Println(err)
+			},
+		},
+	)
+	return restMethods, nil
+}
+
+func (c *kiprisCollector) PostMethods() ([]types.RestMethod, error) {
+	restMethods := make([]types.RestMethod, 1)
+	restMethods = append(restMethods,
+		types.RestMethod{
+			Path: "/task/:taskId",
+			Handler: func(ctx *gin.Context) {
+				taskId := ctx.Param("taskId")
+				ctx.JSON(http.StatusOK, fmt.Sprintf("Hello Post %s", taskId))
+				// param := types.TaskParameters{
+				// 	ProductCode:       "40",
+				// 	Year:              "2017",
+				// 	SerialNumberRange: "1,20",
+				// }
+				// c.GetApplicationNumberList(param)
 			},
 		},
 	)
@@ -529,17 +557,3 @@ func (c *kiprisCollector) CreateApplicationNumber(productCode string, year strin
 
 // 	return false
 // }
-
-// select * from kipris_tasks;
-
-// select * from kipris_application_numbers;
-
-// select * from kipris_collector_histories
-// where is_success = 0;
-
-// select * from kipris_collector_histories
-// where is_success = 1;
-
-// select * from kipris_collector_statuses;
-
-// select * from trade_mark_infos
