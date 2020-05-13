@@ -17,8 +17,8 @@ type RestFailResponse struct {
 
 type TaskParameters struct {
 	ProductCode       string
-	Year              string
-	SerialNumberRange string
+	Year              string `form:"year"`
+	SerialNumberRange string `form:"serail_number_range"`
 	Page              int
 	Size              int
 }

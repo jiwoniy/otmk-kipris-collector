@@ -108,13 +108,6 @@ func writeError(c *gin.Context, err error) {
 	c.JSON(http.StatusBadRequest, response)
 }
 
-// func writeResponse(c *gin.Context, response interface{}) {
-// 	response := types.RestSuccessResponse{
-// 		Data: data,
-// 	}
-// 	c.JSON(http.StatusOK, response)
-// }
-
 // For rest
 func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
 	restMethods := make([]types.RestMethod, 1)
@@ -147,7 +140,7 @@ func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
 				uTaskId, _ := strconv.ParseInt(taskId, 10, 64)
 				data, _ := c.GetTaskById(uTaskId)
 				if data.ID == 0 {
-					ctx.String(http.StatusOK, "empty")
+					ctx.String(http.StatusOK, "not exists taskId")
 				} else {
 					ctx.JSON(http.StatusOK, data)
 				}
@@ -161,16 +154,42 @@ func (c *kiprisCollector) PostMethods() ([]types.RestMethod, error) {
 	restMethods := make([]types.RestMethod, 1)
 	restMethods = append(restMethods,
 		types.RestMethod{
+			Path: "/task",
+			Handler: func(ctx *gin.Context) {
+				var param types.TaskParameters
+				if err := ctx.ShouldBind(&param); err != nil {
+					writeError(ctx, err)
+					return
+				}
+
+				fmt.Println(param)
+				err := c.CreateTask(param)
+				if err != nil {
+					writeError(ctx, err)
+					return
+				} else {
+					ctx.String(http.StatusOK, "create task success")
+					return
+				}
+			},
+		},
+		types.RestMethod{
 			Path: "/task/:taskId",
 			Handler: func(ctx *gin.Context) {
 				taskId := ctx.Param("taskId")
-				ctx.JSON(http.StatusOK, fmt.Sprintf("Hello Post %s", taskId))
-				// param := types.TaskParameters{
-				// 	ProductCode:       "40",
-				// 	Year:              "2017",
-				// 	SerialNumberRange: "1,20",
-				// }
-				// c.GetApplicationNumberList(param)
+
+				uTaskId, _ := strconv.ParseInt(taskId, 10, 64)
+				data, _ := c.GetTaskById(uTaskId)
+				if data.ID == 0 {
+					ctx.String(http.StatusOK, "not exists taskId")
+				} else {
+					err := c.StartCrawler(uTaskId)
+					if err != nil {
+						writeError(ctx, err)
+					} else {
+						ctx.String(http.StatusOK, fmt.Sprintf("start task %s", taskId))
+					}
+				}
 			},
 		},
 	)

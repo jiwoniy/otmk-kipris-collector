@@ -19,12 +19,12 @@ type KiprisTask struct {
 // kipirs aplication number list
 type KiprisApplicationNumber struct {
 	gorm.Model
-	TaskId            int64  `gorm:"not null;index;" validate:"required"`
-	ApplicationNumber string `gorm:"not null;index;" validate:"required"`
-	ProductCode       string `gorm:"not null;index" validate:"required"`
-	Year              string `gorm:"not null;index" validate:"required"`
-	SerialNumber      int    `gorm:"not null;index" validate:"required"`
-	isExist           bool
+	TaskId            int64  `gorm:"not null;index;" validate:"required"  json:"taskId,omitempty"`
+	ApplicationNumber string `gorm:"not null;index;" validate:"required" json:"application_number,omitempty"`
+	ProductCode       string `gorm:"not null;index" validate:"required" json:"product_code,omitempty"`
+	Year              string `gorm:"not null;index" validate:"required" json:"year,omitempty"`
+	SerialNumber      int    `gorm:"not null;index" validate:"required" json:"serial_number,omitempty"`
+	isExist           bool   `json:"_"`
 }
 
 type KiprisCollectorStatus struct {
