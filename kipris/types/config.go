@@ -8,7 +8,7 @@ type CollectorConfig struct {
 	Endpoint     string `json:"endpoint"`
 	AccessKey    string `json:"access_key"`
 	DbType       string `json:"dbType"`
-	DbConnString string `json:"DbConnString"`
+	DbConnString string `json:"dbConnString"`
 }
 
 type QueryConfig struct {

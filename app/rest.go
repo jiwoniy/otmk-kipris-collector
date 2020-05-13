@@ -32,6 +32,11 @@ func setupRouter(app types.RestClient) *gin.Engine {
 }
 
 func StartApplication(app *Application, config types.RestConfig) {
+	// - using env:   export GIN_MODE=release
+	// - using code:  gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.DebugMode)
+	// gin.SetMode(gin.TestMode)
 	r := setupRouter(app.collector)
 
 	// srv := &http.Server{

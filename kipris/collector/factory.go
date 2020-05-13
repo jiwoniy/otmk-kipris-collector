@@ -9,7 +9,7 @@ import (
 )
 
 func New() (types.Collector, error) {
-	configPath := flag.String("cfg", "./config.json", "path to the configuration file")
+	configPath := flag.String("cfg", "./collector_config.json", "path to the configuration file")
 	flag.Parse()
 
 	var cfg types.CollectorConfig
