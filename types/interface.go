@@ -1,26 +1,10 @@
 package types
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	"github.com/jiwoniy/otmk-kipris-collector/model"
 	"github.com/jiwoniy/otmk-kipris-collector/pagination"
 )
-
-type RestHandler func(ctx *gin.Context)
-
-type RestMethod struct {
-	Path    string
-	Handler RestHandler
-}
-
-type TaskParameters struct {
-	ProductCode       string
-	Year              string
-	SerialNumberRange string
-	Page              int
-	Size              int
-}
 
 type RestClient interface {
 	GetMethods() ([]RestMethod, error)
@@ -90,7 +74,7 @@ type Storage interface {
 	GetTradeMarkInfo(v model.TradeMarkInfo, data *model.TradeMarkInfo)
 	GetTrademarkDesignationGoodstInfo(v model.TrademarkDesignationGoodstInfo, data *[]model.TrademarkDesignationGoodstInfo)
 
-	GetYearLastApplicationNumber(year string) string
+	GetYearLastApplicationSerialNumber(year string) int
 }
 
 type Model interface {

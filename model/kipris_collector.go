@@ -8,12 +8,12 @@ import (
 )
 
 type KiprisTask struct {
-	ID        int64 `gorm:"primary_key"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *time.Time `sql:"index"`
-	Started   time.Time
-	Completed time.Time
+	ID          int64      `gorm:"primary_key" json:"id,omitempty"`
+	CreatedAt   time.Time  `json:"createdAt,omitempty"`
+	UpdatedAt   time.Time  `json:"updatedAt,omitempty"`
+	DeletedAt   *time.Time `sql:"index" json:"-"`
+	StartedAt   time.Time  `json:"startedAt,omitempty"`
+	CompletedAt time.Time  `json:"completedAt,omitempty"`
 }
 
 // kipirs aplication number list

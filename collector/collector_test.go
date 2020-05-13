@@ -1,7 +1,6 @@
 package collector
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/jiwoniy/otmk-kipris-collector/types"
@@ -163,10 +162,10 @@ func (suite *CollectorTestSuite) SetupTest() {
 // 	fmt.Println(pagination.TotalRecord)
 // }
 
-func (suite *CollectorTestSuite) TestStartCrawler() {
-	err := suite.collector.StartCrawler(1)
-	fmt.Println(err)
-}
+// func (suite *CollectorTestSuite) TestStartCrawler() {
+// 	err := suite.collector.StartCrawler(1)
+// 	fmt.Println(err)
+// }
 
 // func (suite *CollectorTestSuite) TestGetKiprisApplicationNumerList() {
 // 	param := types.TaskParameters{

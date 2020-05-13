@@ -155,10 +155,10 @@ func (s *storage) GetTaskApplicationNumberList(tx *gorm.DB, taskId int64, pagina
 }
 
 // About kipris application number
-func (s *storage) GetYearLastApplicationNumber(year string) string {
+func (s *storage) GetYearLastApplicationSerialNumber(year string) int {
 	var data model.KiprisApplicationNumber
 	s.db.Table("kipris_application_numbers").Where("year = ?", year).Order("application_number desc").Last(&data)
-	return data.ApplicationNumber
+	return data.SerialNumber
 }
 
 // func (s *storage) GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber) {

@@ -101,6 +101,20 @@ func (c *kiprisCollector) Get(url string, params map[string]string) ([]byte, err
 	return body, nil
 }
 
+func writeError(c *gin.Context, err error) {
+	response := types.RestFailResponse{
+		Error: err.Error(),
+	}
+	c.JSON(http.StatusBadRequest, response)
+}
+
+// func writeResponse(c *gin.Context, response interface{}) {
+// 	response := types.RestSuccessResponse{
+// 		Data: data,
+// 	}
+// 	c.JSON(http.StatusOK, response)
+// }
+
 // For rest
 func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
 	restMethods := make([]types.RestMethod, 1)
@@ -116,19 +130,14 @@ func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
 			Handler: func(ctx *gin.Context) {
 				page := ctx.DefaultQuery("page", "1")
 				size := ctx.DefaultQuery("50", "50")
-				pagination, err := c.GetTaskList(page, size)
-				if err != nil {
-					ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				}
 
-				ctx.JSON(http.StatusOK, gin.H{
-					"data":        pagination.Data,
-					"page":        pagination.Page,
-					"nextpage":    pagination.NextPage,
-					"prevpage":    pagination.PrevPage,
-					"totalPage":   pagination.TotalPage,
-					"totalRecord": pagination.TotalRecord,
-				})
+				pagination, err := c.GetTaskList(page, size)
+
+				if err != nil {
+					writeError(ctx, err)
+				} else {
+					ctx.JSON(http.StatusOK, pagination)
+				}
 			},
 		},
 		types.RestMethod{
@@ -137,13 +146,11 @@ func (c *kiprisCollector) GetMethods() ([]types.RestMethod, error) {
 				taskId := ctx.Param("taskId")
 				uTaskId, _ := strconv.ParseInt(taskId, 10, 64)
 				data, _ := c.GetTaskById(uTaskId)
-				ctx.JSON(http.StatusOK, gin.H{
-					"id":        data.ID,
-					"createdAt": data.CreatedAt,
-					"updatedAt": data.UpdatedAt,
-					"started":   data.Started,
-					"completed": data.Completed,
-				})
+				if data.ID == 0 {
+					ctx.String(http.StatusOK, "empty")
+				} else {
+					ctx.JSON(http.StatusOK, data)
+				}
 			},
 		},
 	)
@@ -188,9 +195,14 @@ func (c *kiprisCollector) CreateTask(args types.TaskParameters) error {
 	}
 	// require
 	if serialNumberRange == "" {
-		yearLastApplicationNumber := c.storage.GetYearLastApplicationNumber(year)
-		if yearLastApplicationNumber == "" {
+		yearLastApplicationSerialNumber := c.storage.GetYearLastApplicationSerialNumber(year)
+		if yearLastApplicationSerialNumber == 0 {
 			serialNumberRange = "1," + strconv.Itoa(taskNumber)
+		} else {
+			start := yearLastApplicationSerialNumber
+			newStart := start + 1
+			newEnd := start + taskNumber
+			serialNumberRange = strconv.Itoa(newStart) + "," + strconv.Itoa(newEnd)
 		}
 	}
 
@@ -469,7 +481,6 @@ func (c *kiprisCollector) CrawlerApplicationNumber(tx *gorm.DB, applicationNumbe
 
 func getSerialNumberList(serialNumberRange string) []int {
 	serialRangeList := strings.Split(serialNumberRange, ",")
-
 	min := 0
 	max := 9999999
 	for _, serial := range serialRangeList {
