@@ -24,10 +24,11 @@ func TestCollectorRest(t *testing.T) {
 		},
 		DbConfig: types.DbConfig{
 			DbType:       "sqlite3",
-			DbConnString: ":memory:",
+			DbConnString: "./test.db",
+			// DbType:       "mysql",
+			// DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
 		},
-		// DbType:       "mysql",
-		// DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
+
 		// DbConnString: "./test.db",
 	}
 
@@ -41,12 +42,19 @@ func TestCollectorRest(t *testing.T) {
 	}
 	err = collector.CreateTask(param)
 	err = collector.CreateTask(param)
-	err = collector.CreateTask(param)
+	// err = collector.CreateTask(param)
 	if err != nil {
 		t.Error(err)
 	}
 
 	// pagination, _ := collector.GetTaskList("1", "20")
+
+	// s := collector.GetStorage()
+	// db := s.GetDB()
+
+	// pagination, _ := s.GetTaskApplicationNumberList(db, 1, 1, 5)
+	// fmt.Println(pagination)
+	// fmt.Println(pagination.Data)
 
 	// a, _ := json.Marshal(pagination)
 	// fmt.Println(string(a))

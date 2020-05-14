@@ -306,6 +306,8 @@ func (c *kiprisCollector) StartCrawler(taskId int64) error {
 	db := c.storage.GetDB()
 	pageSize := 50
 
+	fmt.Println(taskId)
+
 	currentTask := model.KiprisTask{}
 
 	if err := db.Table("kipris_tasks").Where("id = ?", taskId).First(&currentTask).Error; err != nil {

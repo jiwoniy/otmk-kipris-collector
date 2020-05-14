@@ -129,7 +129,7 @@ func (s *storage) GetTaskById(taskId int64) (model.KiprisTask, error) {
 
 func (s *storage) GetTaskApplicationNumberList(tx *gorm.DB, taskId int64, paginationParams ...int) (*utils.Paginator, error) {
 	searchResult := make([]model.KiprisApplicationNumber, 0)
-	tx.Table("kipris_application_numbers").Where("task_id = ?", taskId)
+	tx = tx.Table("kipris_application_numbers").Where("task_id = ?", taskId)
 
 	if len(paginationParams) < 2 {
 		var count int

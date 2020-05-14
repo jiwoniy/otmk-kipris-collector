@@ -22,6 +22,8 @@ func (suite *CollectorTestSuite) SetupTest() {
 		DbConfig: types.DbConfig{
 			DbType:       "sqlite3",
 			DbConnString: ":memory:",
+			// DbType:       "mysql",
+			// DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
 		},
 		// DbType:       "mysql",
 		// DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
