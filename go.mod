@@ -25,4 +25,5 @@ require (
 	golang.org/x/text v0.3.2 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1
 	gopkg.in/ini.v1 v1.55.0 // indirect
+	gopkg.in/yaml.v2 v2.2.8
 )

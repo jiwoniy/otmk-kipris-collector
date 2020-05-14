@@ -15,24 +15,8 @@ limitations under the License.
 */
 package main
 
-import (
-	"github.com/jiwoniy/otmk-kipris-collector/app"
-	"github.com/jiwoniy/otmk-kipris-collector/kipris/collector"
-	"github.com/jiwoniy/otmk-kipris-collector/kipris/types"
-)
+import "github.com/jiwoniy/otmk-kipris-collector/cmd"
 
 func main() {
-	// cmd.Execute()
-
-	collectorInstance, err := collector.New()
-
-	if err != nil {
-		panic(err)
-	}
-
-	application := app.NewApplication(collectorInstance)
-	restConfig := types.RestConfig{
-		ListenAddr: ":8080",
-	}
-	app.StartApplication(application, restConfig)
+	cmd.Execute()
 }

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"github.com/jiwoniy/otmk-kipris-collector/kipris/types"
@@ -31,12 +32,20 @@ func setupRouter(app types.RestClient) *gin.Engine {
 	return r
 }
 
-func StartApplication(app *Application, config types.RestConfig) {
+func StartApplication(app *Application, mode string, config types.RestConfig) {
 	// - using env:   export GIN_MODE=release
 	// - using code:  gin.SetMode(gin.ReleaseMode)
-	// gin.SetMode(gin.ReleaseMode)
-	// gin.SetMode(gin.DebugMode)
-	// gin.SetMode(gin.TestMode)
+	switch mode {
+	case "prod":
+		gin.SetMode(gin.ReleaseMode)
+	case "dev":
+		gin.SetMode(gin.DebugMode)
+	case "test":
+		gin.SetMode(gin.TestMode)
+	default:
+		gin.SetMode(gin.DebugMode)
+	}
+
 	r := setupRouter(app.collector)
 
 	// srv := &http.Server{
@@ -65,5 +74,6 @@ func StartApplication(app *Application, config types.RestConfig) {
 	// }
 	// log.Println("Server exiting")
 
+	r.Use(cors.Default())
 	r.Run(config.ListenAddr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

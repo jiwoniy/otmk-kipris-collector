@@ -16,9 +16,14 @@ limitations under the License.
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 
+	"github.com/jiwoniy/otmk-kipris-collector/app"
+	"github.com/jiwoniy/otmk-kipris-collector/kipris/collector"
+	"github.com/jiwoniy/otmk-kipris-collector/kipris/types"
 	"github.com/spf13/cobra"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -29,7 +34,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "kipris-collector",
+	Use:   "otmk-kipris-collector",
 	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
@@ -40,49 +45,48 @@ to quickly create a Cobra application.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
-		// queryConfig := types.QueryConfig{
-		// 	DbType:       "mysql",
-		// 	DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
-		// }
+		var appCfg types.ApplicationConfig
 
-		// queryApp, err := query.NewApp(queryConfig)
-		// if err != nil {
-		// 	panic(err)
-		// }
+		cfgData, err := ioutil.ReadFile(cfgFile)
+		if err != nil {
+			panic(err)
+		}
 
-		// config := types.RestConfig{
-		// 	ListenAddr: ":8082",
-		// }
+		if err := json.Unmarshal(cfgData, &appCfg); err != nil {
+			panic(err)
+		}
 
-		// rest.StartApplication(queryApp, config)
+		var config types.CollectorConfig
+		mode := "dev"
+		if len(args) < 1 {
+			config = appCfg.Dev
+		} else {
+			env := args[0]
+			switch env {
+			case "prod":
+				config = appCfg.Prod
+				mode = "prod"
+			case "dev":
+				config = appCfg.Dev
+			case "test":
+				config = appCfg.Test
+				mode = "test"
+			default:
+				config = appCfg.Dev
+			}
+		}
 
-		// config := types.RestConfig{
-		// 	ListenAddr: ":8082",
-		// }
-		// rest.StartApplication(config)
+		collectorInstance, err := collector.New(config)
 
-		// config := collector.CollectorConfig{
-		// 	Endpoint:  "http://plus.kipris.or.kr/openapi/rest",
-		// 	AccessKey: "=JbKg6deF5WolYTZcZkypzgLBbSVbjZC6VEgfccaQyw=",
-		// 	// ListenAddr: ":8082",
-		// 	DbType:       "mysql",
-		// 	DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
-		// }
+		if err != nil {
+			panic(err)
+		}
 
-		// collector, err := collector.NewCollector(config)
-		// if err != nil {
-		// 	panic(err)
-		// }
-		// applicationNumberList := collector.CreateApplicationNumberList()
-
-		// for _, applicationNumber := range applicationNumberList {
-		// 	// isSuccess := suite.collector.CrawlerApplicationNumber(applicationNumber)
-		// 	collector.CrawlerApplicationNumber(applicationNumber)
-		// 	// if isSuccess == false {
-		// 	// 	fmt.Println("stop")
-		// 	// 	break
-		// 	// }
-		// }
+		application := app.NewApplication(collectorInstance)
+		restConfig := types.RestConfig{
+			ListenAddr: config.ListenAddr,
+		}
+		app.StartApplication(application, mode, restConfig)
 	},
 }
 
@@ -102,7 +106,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.kipris-collector.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "collector_config.json", "config file (default is $HOME/.collector_config.json)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -124,7 +128,7 @@ func initConfig() {
 
 		// Search config in home directory with name ".kipris-collector" (without extension).
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".kipris-collector")
+		viper.SetConfigName(".otmk-kipris-collector")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

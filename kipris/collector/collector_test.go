@@ -15,12 +15,16 @@ type CollectorTestSuite struct {
 
 func (suite *CollectorTestSuite) SetupTest() {
 	config := types.CollectorConfig{
-		Endpoint:  "http://plus.kipris.or.kr/openapi/rest",
-		AccessKey: "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=", // onthe mark key
+		KiprisConfig: types.KiprisConfig{
+			Endpoint:  "http://plus.kipris.or.kr/openapi/rest",
+			AccessKey: "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=", // onthe mark key
+		},
+		DbConfig: types.DbConfig{
+			DbType:       "sqlite3",
+			DbConnString: ":memory:",
+		},
 		// DbType:       "mysql",
 		// DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
-		DbType:       "sqlite3",
-		DbConnString: ":memory:",
 		// DbConnString: "./test.db",
 	}
 

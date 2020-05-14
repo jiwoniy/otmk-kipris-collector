@@ -1,6 +1,23 @@
 {
-  "endpoint": "http://plus.kipris.or.kr/openapi/rest",
-  "access_key": "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=",
-  "dbType":       "sqlite3",
-	"dbConnString": "./test.db"
+  "prod": {
+    "endpoint": "http://plus.kipris.or.kr/openapi/rest",
+    "access_key": "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=",
+    "dbType":       "sqlite3",
+    "dbConnString": "./prod.db",
+    "listenAddr": ":80"
+  },
+  "dev": {
+    "endpoint": "http://plus.kipris.or.kr/openapi/rest",
+    "access_key": "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=",
+    "dbType":       "sqlite3",
+    "dbConnString": "./dev.db",
+    "listenAddr": ":8080"
+  },
+  "test": {
+    "endpoint": "http://plus.kipris.or.kr/openapi/rest",
+    "access_key": "I0Jnw4w6/UpQSp1zHPsIDSztV9=hgVUNI6IANH3bCEw=",
+    "dbType":       "sqlite3",
+    "dbConnString": ":memory:",
+    "listenAddr": ":8080"
+  }
 }
