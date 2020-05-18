@@ -144,6 +144,8 @@ func (rest *RESTCaller) Get(headers *http.Header, url string, params map[string]
 
 	body, err := ioutil.ReadAll(resp.Body)
 
+	defer resp.Body.Close()
+
 	if err != nil {
 		log.Printf("[GET] %s (error: %s)", url, err.Error())
 		return nil, err

@@ -1,6 +1,9 @@
 package app
 
 import (
+	"io"
+	"os"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/jiwoniy/otmk-kipris-collector/kipris/types"
@@ -36,8 +39,8 @@ func StartApplication(app *Application, mode string, config types.RestConfig) {
 	gin.DisableConsoleColor()
 
 	// Logging to a file.
-	// f, _ := os.Create("gin.log")
-	// gin.DefaultWriter = io.MultiWriter(f)
+	f, _ := os.Create("gin.log")
+	gin.DefaultWriter = io.MultiWriter(f)
 
 	// - using env:   export GIN_MODE=release
 	// - using code:  gin.SetMode(gin.ReleaseMode)

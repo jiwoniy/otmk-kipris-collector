@@ -12,10 +12,7 @@ import (
 	"github.com/jiwoniy/otmk-kipris-collector/utils"
 )
 
-func init() {
-	// TODO define log
-	fmt.Println("init query")
-}
+func init() {}
 
 type keeper struct {
 	storage *types.Storage

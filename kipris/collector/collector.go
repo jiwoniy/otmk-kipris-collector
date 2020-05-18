@@ -33,7 +33,7 @@ var taskNumber = 100
 var crawlSize = 25
 
 func init() {
-	fpLog, err := os.OpenFile("collector_log.txt", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	fpLog, err := os.OpenFile("collector.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -386,7 +386,6 @@ func getKiprisTradeMarkInfo(c *kiprisCollector, applicationNumber string) (*mode
 
 	content, err := c.Get("/trademarkInfoSearchService/applicationNumberSearchInfo", params)
 	if err != nil {
-		// return nil, fmt.Sprintf("[%s: TradeMarkInfo] applicationNumberSearchInfo request (error: %s)", applicationNumber, err)
 		return nil, fmt.Sprintf("[TradeMarkInfo] applicationNumberSearchInfo request (error: %s)", err)
 	}
 
@@ -400,7 +399,8 @@ func getKiprisTradeMarkInfo(c *kiprisCollector, applicationNumber string) (*mode
 	if tradeMarkInfo.Result() == model.Success {
 		return &tradeMarkInfo, ""
 	} else {
-		return nil, fmt.Sprintf("[TradeMarkInfo] applicationNumberSearchInfo response %s (error: %s)", getKiprisRequestResult(tradeMarkInfo.Result()), err)
+		collectLogger.Printf("[TradeMarkInfo: %s] applicationNumberSearchInfo (response: %v)", applicationNumber, tradeMarkInfo.Body)
+		return nil, fmt.Sprintf("[TradeMarkInfo] applicationNumberSearchInfo response %s", getKiprisRequestResult(tradeMarkInfo.Result()))
 	}
 }
 
@@ -437,6 +437,7 @@ func getTrademarkDesignationGoodstInfo(c *kiprisCollector, applicationNumber str
 	if trademarkDesignationGoodstInfo.Result() == model.Success {
 		return &trademarkDesignationGoodstInfo, ""
 	} else {
+		collectLogger.Printf("[TrademarkDesignationGoodstInfo: %s] applicationNumberSearchInfo (response: %v)", applicationNumber, trademarkDesignationGoodstInfo.Body)
 		return nil, fmt.Sprintf("[TrademarkDesignationGoodstInfo] trademarkDesignationGoodstInfo response %s (error: %s)", getKiprisRequestResult(trademarkDesignationGoodstInfo.Result()), err)
 	}
 }
