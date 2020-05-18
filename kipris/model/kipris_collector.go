@@ -19,11 +19,11 @@ type KiprisTask struct {
 // kipirs aplication number list
 type KiprisApplicationNumber struct {
 	gorm.Model
-	TaskId            int64  `gorm:"not null;index;" validate:"required"  json:"taskId,omitempty"`
-	ApplicationNumber string `gorm:"not null;index;" validate:"required" json:"application_number,omitempty"`
-	ProductCode       string `gorm:"not null;index" validate:"required" json:"product_code,omitempty"`
-	Year              string `gorm:"not null;index" validate:"required" json:"year,omitempty"`
-	SerialNumber      int    `gorm:"not null;index" validate:"required" json:"serial_number,omitempty"`
+	TaskId            int64  `gorm:"not null;" validate:"required"  json:"taskId,omitempty"`
+	ApplicationNumber string `gorm:"not null;" validate:"required" json:"application_number,omitempty"`
+	ProductCode       string `gorm:"not null;" validate:"required" json:"product_code,omitempty"`
+	Year              string `gorm:"not null;" validate:"required" json:"year,omitempty"`
+	SerialNumber      int    `gorm:"not null;" validate:"required" json:"serial_number,omitempty"`
 	isExist           bool   `json:"_"`
 }
 
@@ -40,7 +40,7 @@ type KiprisCollectorHistory struct {
 	ApplicationNumber string `gorm:"not null;" validate:"required"`
 	TaskId            int64  `gorm:"not null;index;" validate:"required"`
 	IsSuccess         bool
-	Error             string
+	Error             string `gorm:"type:text"`
 }
 
 func (data *KiprisApplicationNumber) Valid() bool {

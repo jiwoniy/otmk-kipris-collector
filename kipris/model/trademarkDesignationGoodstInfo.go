@@ -13,7 +13,7 @@ type TrademarkDesignationGoodstInfo struct {
 	DesignationGoodsSerialNumber                  TrimString `xml:"DesignationGoodsSerialNumber,omitempty" gorm:"not null;index;" validate:"required" json:"designationGoodsSerialNumber"`
 	DesignationGoodsClassificationInformationCode TrimString `xml:"DesignationGoodsClassificationInformationCode,omitempty" gorm:"not null;index;" validate:"required" json:"designationGoodsClassificationInformationCode"`
 	SimilargroupCode                              TrimString `xml:"SimilargroupCode,omitempty" gorm:"not null;index;" validate:"required" json:"similargroupCode"`
-	DesignationGoodsHangeulName                   TrimString `xml:"DesignationGoodsHangeulName,omitempty" gorm:"not null;index;" validate:"required" json:"designationGoodsHangeulName"`
+	DesignationGoodsHangeulName                   TrimString `xml:"DesignationGoodsHangeulName,omitempty" gorm:"type:text;" validate:"required" json:"designationGoodsHangeulName"`
 	DesignationGoodsEnglishsentenceName           TrimString `xml:"DesignationGoodsEnglishsentenceName,omitempty" json:"designationGoodsEnglishsentenceName"`
 }
 

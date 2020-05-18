@@ -131,27 +131,27 @@ func (s *storage) GetTaskApplicationNumberList(tx *gorm.DB, taskId int64, pagina
 	searchResult := make([]model.KiprisApplicationNumber, 0)
 	tx = tx.Table("kipris_application_numbers").Where("task_id = ?", taskId)
 
-	if len(paginationParams) < 2 {
-		var count int
-		tx.Count(&count)
-		paginatorIns := utils.Paging(&utils.PaginatorParam{
-			DB:      tx,
-			Page:    1,
-			Limit:   count,
-			OrderBy: []string{"id asc"},
-			ShowSQL: true,
-		}, &searchResult)
-		return paginatorIns, nil
-	} else {
-		paginatorIns := utils.Paging(&utils.PaginatorParam{
-			DB:      tx,
-			Page:    paginationParams[0],
-			Limit:   paginationParams[1],
-			OrderBy: []string{"id asc"},
-			ShowSQL: true,
-		}, &searchResult)
-		return paginatorIns, nil
-	}
+	// if len(paginationParams) < 2 {
+	// 	var count int
+	// 	tx.Count(&count)
+	// 	paginatorIns := utils.Paging(&utils.PaginatorParam{
+	// 		DB:      tx,
+	// 		Page:    1,
+	// 		Limit:   count,
+	// 		OrderBy: []string{"id asc"},
+	// 		ShowSQL: true,
+	// 	}, &searchResult)
+	// 	return paginatorIns, nil
+	// } else {
+	paginatorIns := utils.Paging(&utils.PaginatorParam{
+		DB:      tx,
+		Page:    paginationParams[0],
+		Limit:   paginationParams[1],
+		OrderBy: []string{"id asc"},
+		ShowSQL: true,
+	}, &searchResult)
+	return paginatorIns, nil
+	// }
 }
 
 // About kipris application number
