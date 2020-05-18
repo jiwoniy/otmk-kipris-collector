@@ -22,6 +22,7 @@ func (suite *CollectorTestSuite) SetupTest() {
 		DbConfig: types.DbConfig{
 			DbType:       "sqlite3",
 			DbConnString: ":memory:",
+			// DbConnString: "./collector_test.db",
 			// DbType:       "mysql",
 			// DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
 		},
@@ -169,8 +170,12 @@ func (suite *CollectorTestSuite) SetupTest() {
 // }
 
 // func (suite *CollectorTestSuite) TestStartCrawler() {
-// 	err := suite.collector.StartCrawler(1)
-// 	fmt.Println(err)
+// 	param := types.TaskParameters{
+// 		Year:              "2018",
+// 		SerialNumberRange: "1,10",
+// 	}
+// 	suite.collector.CreateTask(param)
+// 	suite.collector.StartCrawler(1)
 // }
 
 // func (suite *CollectorTestSuite) TestGetKiprisApplicationNumerList() {
