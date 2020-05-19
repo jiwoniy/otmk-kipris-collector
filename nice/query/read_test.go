@@ -14,7 +14,7 @@ func TestSearchResult(t *testing.T) {
 	}
 	defer db.Close()
 
-	client := NewKeeper(db)
+	client := NewQuery(db)
 
 	type testCase struct {
 		Text               string

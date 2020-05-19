@@ -303,6 +303,28 @@ func (c *kiprisCollector) GetTaskById(taskId int64) (model.KiprisTask, error) {
 	return task, nil
 }
 
+func (c *kiprisCollector) StartAutoCrawler(auto bool) {
+	// taskId := c.storage.GetCurrentCrawlTaskId()
+	// if taskId == 0 {
+	// 	// start
+	// } else {
+	// 	// pending
+	// }
+
+	// for {
+	// 	nextTaskId := c.GetNextTaskId(taskId)
+	// 	if nextTaskId {
+	// 		isSuccess := c.StartCrawler(uTaskId)
+	// 		if isSuccess == false {
+	// 			collectLogger.Printf("[StartAutoCrawler Task Id] %d stop", uTaskId)
+	// 			break
+	// 		}
+	// 	} else {
+	// 		break
+	// 	}
+	// }
+}
+
 func (c *kiprisCollector) StartCrawler(taskId int64) error {
 	db := c.storage.GetDB()
 	pageSize := crawlSize

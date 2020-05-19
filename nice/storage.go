@@ -1,4 +1,4 @@
-package command
+package nice
 
 import (
 	"github.com/jinzhu/gorm"
@@ -6,8 +6,7 @@ import (
 )
 
 func NewStorage(db *gorm.DB) *types.Storage {
-	// db.AutoMigrate(&sdk.AccountTag{}, &sdk.AccountModel{}, &sdk.KeyLocation{})
 	return &types.Storage{
-		Db: db,
+		DB: db,
 	}
 }

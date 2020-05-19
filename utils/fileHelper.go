@@ -1,4 +1,4 @@
-package command
+package utils
 
 import "os"
 
@@ -9,3 +9,9 @@ func FileExists(filename string) bool {
 	}
 	return !info.IsDir()
 }
+
+// dir, err := os.Getwd()
+// if err != nil {
+// 	log.Fatal(err)
+// }
+// fmt.Println(dir)

@@ -1,4 +1,4 @@
-package command
+package nice
 
 import (
 	"bufio"
@@ -13,14 +13,13 @@ import (
 	"github.com/jiwoniy/otmk-kipris-collector/nice/types"
 )
 
-func init() {
-}
+func init() {}
 
 type keeper struct {
 	storage *types.Storage
 }
 
-func NewKeeper(db *gorm.DB) types.Client {
+func NewKeeper(db *gorm.DB) types.ImportClient {
 	return &keeper{
 		storage: NewStorage(db),
 	}
@@ -30,20 +29,42 @@ func (command *keeper) GetStorage() *types.Storage {
 	return command.storage
 }
 
-func (command *keeper) GetMethods() ([]types.RestMethod, error) {
-	restMethods := []types.RestMethod{
-		types.RestMethod{},
+func (command *keeper) ImportNiceCsv(folderPath string, db *gorm.DB) {
+	migrate(db)
+
+	files, err := getFiles(folderPath)
+	if err != nil {
+		panic(err)
+	} else {
+		for _, file := range files {
+			filePath := folderPath + "/" + file.Name()
+			if err := importCsvFile(filePath, db); err != nil {
+				panic(err)
+			}
+		}
 	}
-	return restMethods, nil
 }
 
-func (command *keeper) Create() error {
-	return nil
+func (command *keeper) GetNiceList(result *[]schema.NiceClassification) {
+	// var count int
+	storage := command.GetStorage()
+	// storage.DB.Find(&data).Count(&count)
+	storage.DB.Find(result)
 }
+
+// func (command *keeper) GetMethods() ([]types.RestMethod, error) {
+// 	restMethods := []types.RestMethod{
+// 		types.RestMethod{},
+// 	}
+// 	return restMethods, nil
+// }
+
+// func (command *keeper) Create() error {
+// 	return nil
+// }
 
 // Ref
 // https://medium.com/@barunthapa/working-with-csv-in-go-50a4f540e623
-
 func getKey(index int) (string, error) {
 	// 지정상품(국문),NICE분류,유사군코드,지정상품(영문),출처
 	// j = 0 지정상품(국문)
@@ -67,10 +88,25 @@ func getKey(index int) (string, error) {
 	}
 }
 
-func importCsvFile(db *gorm.DB, path string) error {
-	if file, err := os.Open(path); err == nil {
-		reader := csv.NewReader(bufio.NewReader(file))
+func getFiles(path string) ([]os.FileInfo, error) {
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
 
+	return files, nil
+}
+
+func migrate(db *gorm.DB) {
+	db.AutoMigrate(&schema.NiceClassification{})
+}
+
+// func importCsvFile(db *gorm.DB, path string) error {
+func importCsvFile(path string, db *gorm.DB) error {
+	file, err := os.Open(path)
+	if err == nil {
+		reader := csv.NewReader(bufio.NewReader(file))
 		rows, _ := reader.ReadAll()
 
 		for rowIndex, row := range rows {
@@ -83,7 +119,6 @@ func importCsvFile(db *gorm.DB, path string) error {
 					}
 					rowData[key] = value
 				}
-
 				dataRow := schema.NiceClassification{
 					ClassificationCode: rowData["ClassificationCode"],
 					Code:               rowData["Code"],
@@ -97,39 +132,5 @@ func importCsvFile(db *gorm.DB, path string) error {
 		return nil
 	}
 
-	return fmt.Errorf("file open error")
-}
-
-func getFiles(path string) ([]os.FileInfo, error) {
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
-
-	return files, nil
-
-}
-
-func ImportCsv(db *gorm.DB) {
-	db.AutoMigrate(&schema.NiceClassification{})
-
-	// dir, err := os.Getwd()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(dir)
-
-	folderPath := "./importCsv/csv"
-	files, err := getFiles(folderPath)
-	if err != nil {
-		panic("failed open csv folder")
-	} else {
-		for _, file := range files {
-			filePath := folderPath + "/" + file.Name()
-			if err := importCsvFile(db, filePath); err != nil {
-				fmt.Println(err)
-			}
-		}
-	}
+	return err
 }

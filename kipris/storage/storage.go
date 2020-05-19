@@ -161,6 +161,21 @@ func (s *storage) GetYearLastApplicationSerialNumber(year string) int {
 	return data.SerialNumber
 }
 
+// find current crawler task
+func (s *storage) GetCurrentCrawlTaskId() int64 {
+	// TODO 현재 started_at과 completed_at이 "NULL"로 들어가는거 언젠가 개선..
+	var data model.KiprisTask
+	s.db.Table("kipris_tasks").Where("started_at != ? AND completed_at = ?", "NULL", "NULL").First(&data)
+	return data.ID
+}
+
+func (s *storage) GetNextTaskId(taskId int64) int64 {
+	// TODO 현재 started_at과 completed_at이 "NULL"로 들어가는거 언젠가 개선..
+	var data model.KiprisTask
+	s.db.Table("kipris_tasks").Where("started_at = ? AND completed_at = ?", "NULL", "NULL").Order("id asc").First(&data)
+	return data.ID
+}
+
 // func (s *storage) GetKiprisApplicationNumber(v model.KiprisApplicationNumber, data *model.KiprisApplicationNumber) {
 // 	s.db.Where(&v).First(&data)
 // }

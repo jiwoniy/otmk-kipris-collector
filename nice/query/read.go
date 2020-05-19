@@ -30,7 +30,7 @@ type similarityGroupsPaginatorResponse struct {
 	Page               int         `json:"page"`
 }
 
-func NewKeeper(db *gorm.DB) types.QueryClient {
+func NewQuery(db *gorm.DB) types.QueryClient {
 	return &keeper{
 		storage: NewStorage(db),
 	}

@@ -31,10 +31,6 @@ type NiceClassification struct {
 	Source             string
 }
 
-// TODO
-// search usage count
-// select usage count
-
 type SimilarCodeGroupReciver struct {
 	ClassificationCode string `json:"classificationCode"`
 	Code               string `json:"code"`
@@ -42,7 +38,6 @@ type SimilarCodeGroupReciver struct {
 }
 
 type SimilarCodeGroup struct {
-	// commonModelFields
 	ID uint `json:"id"`
 	SimilarCodeGroupReciver
 	Summary_EN string `json:"summaryEn"`

@@ -21,6 +21,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	// _ "github.com/jinzhu/gorm/dialects/mysql"
+	// "github.com/jiwoniy/otmk-kipris-collector/nice"
 	"github.com/jiwoniy/otmk-kipris-collector/app"
 	"github.com/jiwoniy/otmk-kipris-collector/kipris/collector"
 	"github.com/jiwoniy/otmk-kipris-collector/kipris/types"
@@ -87,6 +89,16 @@ to quickly create a Cobra application.`,
 			ListenAddr: config.ListenAddr,
 		}
 		app.StartApplication(application, mode, restConfig)
+
+		// nice import
+		// db, err := gorm.Open("mysql", "nice_admin:Nice0518!@@(61.97.187.142:3306)/nice?charset=utf8&parseTime=True&loc=Local")
+		// if err != nil {
+		// 	panic(err)
+		// }
+		// defer db.Close()
+		// client := nice.NewKeeper(db)
+		// folderPath := "./nice/csv"
+		// client.ImportNiceCsv(folderPath, db)
 	},
 }
 
