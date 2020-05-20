@@ -12,8 +12,8 @@ type KiprisTask struct {
 	CreatedAt   time.Time  `json:"createdAt,omitempty"`
 	UpdatedAt   time.Time  `json:"updatedAt,omitempty"`
 	DeletedAt   *time.Time `sql:"index" json:"-"`
-	StartedAt   time.Time  `json:"startedAt,omitempty"`
-	CompletedAt time.Time  `json:"completedAt,omitempty"`
+	StartedAt   time.Time  `gorm:"default:null" json:"startedAt,omitempty"`
+	CompletedAt time.Time  `gorm:"default:null" json:"completedAt,omitempty"`
 }
 
 // kipirs aplication number list

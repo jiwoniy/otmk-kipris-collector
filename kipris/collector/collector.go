@@ -173,6 +173,22 @@ func (c *kiprisCollector) PostMethods() ([]types.RestMethod, error) {
 			},
 		},
 		types.RestMethod{
+			Path: "/autoTask",
+			Handler: func(ctx *gin.Context) {
+				currentTaskId := c.storage.GetCurrentCrawlTaskId()
+				if currentTaskId != 0 {
+					ctx.String(http.StatusOK, fmt.Sprintf("task %d working", currentTaskId))
+					return
+				}
+				go func() {
+					c.StartAutoCrawler()
+				}()
+
+				ctx.String(http.StatusOK, fmt.Sprint("start auto task"))
+				return
+			},
+		},
+		types.RestMethod{
 			Path: "/task/:taskId",
 			Handler: func(ctx *gin.Context) {
 				taskId := ctx.Param("taskId")
@@ -187,7 +203,7 @@ func (c *kiprisCollector) PostMethods() ([]types.RestMethod, error) {
 						c.StartCrawler(uTaskId)
 					}()
 					ctx.String(http.StatusOK, fmt.Sprintf("start task %s", taskId))
-
+					return
 				}
 			},
 		},
@@ -303,26 +319,26 @@ func (c *kiprisCollector) GetTaskById(taskId int64) (model.KiprisTask, error) {
 	return task, nil
 }
 
-func (c *kiprisCollector) StartAutoCrawler(auto bool) {
-	// taskId := c.storage.GetCurrentCrawlTaskId()
-	// if taskId == 0 {
-	// 	// start
-	// } else {
-	// 	// pending
-	// }
+func (c *kiprisCollector) StartAutoCrawler() {
+	currentTaskId := c.storage.GetCurrentCrawlTaskId()
 
-	// for {
-	// 	nextTaskId := c.GetNextTaskId(taskId)
-	// 	if nextTaskId {
-	// 		isSuccess := c.StartCrawler(uTaskId)
-	// 		if isSuccess == false {
-	// 			collectLogger.Printf("[StartAutoCrawler Task Id] %d stop", uTaskId)
-	// 			break
-	// 		}
-	// 	} else {
-	// 		break
-	// 	}
-	// }
+	if currentTaskId != 0 {
+		return
+	}
+
+	for {
+		nextTaskId := c.storage.GetNextTaskId()
+		if nextTaskId == 0 {
+			collectLogger.Printf("[StartAutoCrawler] There are no tasks")
+			break
+		} else {
+			isSuccess := c.StartCrawler(nextTaskId)
+			if isSuccess != nil {
+				collectLogger.Printf("[StartAutoCrawler] nexTaskId: %s (error: %s)", nextTaskId, isSuccess)
+				break
+			}
+		}
+	}
 }
 
 func (c *kiprisCollector) StartCrawler(taskId int64) error {

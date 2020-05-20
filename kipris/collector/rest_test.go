@@ -2,7 +2,6 @@ package collector
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/jiwoniy/otmk-kipris-collector/kipris/model"
@@ -62,6 +61,8 @@ func TestCollectorRest(t *testing.T) {
 
 	data, _ := collector.GetTaskById(10)
 
-	b, _ := json.Marshal(data)
-	fmt.Println(string(b))
+	json.Marshal(data)
+	// b, _ := json.Marshal(data)
+	// fmt.Println(string(b))
+
 }

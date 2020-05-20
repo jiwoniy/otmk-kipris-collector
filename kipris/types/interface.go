@@ -31,7 +31,7 @@ type Collector interface {
 
 	// crawler
 	StartCrawler(taskId int64) error
-	StartAutoCrawler(auto bool)
+	StartAutoCrawler()
 	CrawlerApplicationNumber(tx *gorm.DB, taskId int64, applicationNumber string) bool
 
 	// collector helper
@@ -77,7 +77,7 @@ type Storage interface {
 
 	GetYearLastApplicationSerialNumber(year string) int
 	GetCurrentCrawlTaskId() int64
-	GetNextTaskId(taskId int64) int64
+	GetNextTaskId() int64
 }
 
 type Model interface {

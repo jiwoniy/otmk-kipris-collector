@@ -113,7 +113,7 @@ func (query *keeper) getSearchText(ctx *gin.Context) {
 
 func (query *keeper) SearchNiceClassfications(text string, classificationCode string) (*[]schema.SimilarCodeGroup, error) {
 	var codesGroups []schema.SimilarCodeGroup
-	tx := query.storage.Db.Table("similar_code_groups").Select("id, classification_code").Group("classification_code")
+	tx := query.storage.DB.Table("similar_code_groups").Select("id, classification_code").Group("classification_code")
 
 	tx = tx.Where("summary_ko LIKE ?", fmt.Sprint("%", text, "%"))
 	if len(classificationCode) > 0 {
@@ -127,7 +127,7 @@ func (query *keeper) SearchNiceClassfications(text string, classificationCode st
 
 func (query *keeper) SearchSimilarGroups(text string, classificationCode string, size int, page int) (*utils.Paginator, error) {
 	var codesGroups []schema.SimilarCodeGroup
-	tx := query.storage.Db.Table("similar_code_groups")
+	tx := query.storage.DB.Table("similar_code_groups")
 	// .Select(`id, classification_code, code, TRIM(substr(summary_ko, INSTR(summary_ko, ${휴대폰'), LENGTH(summary_ko) - INSTR(summary_ko, '휴대폰'))) as summary_ko)`)
 
 	if len(text) > 0 {
@@ -172,7 +172,7 @@ func (query *keeper) SearchSimilarGroups(text string, classificationCode string,
 
 func (query *keeper) GetSimilarCodeText(id string) (string, error) {
 	var codesGroup schema.SimilarCodeGroup
-	tx := query.storage.Db.Table("similar_code_groups").Select("id, summary_ko")
+	tx := query.storage.DB.Table("similar_code_groups").Select("id, summary_ko")
 
 	tx = tx.Where("id = ?", id).First(&codesGroup)
 

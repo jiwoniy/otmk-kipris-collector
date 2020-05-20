@@ -22,9 +22,8 @@ func (suite *CollectorTestSuite) SetupTest() {
 		DbConfig: types.DbConfig{
 			DbType:       "sqlite3",
 			DbConnString: ":memory:",
-			// DbConnString: "./collector_test.db",
 			// DbType:       "mysql",
-			// DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
+			// DbConnString: "kipris_admin:Kipris0518!@@(61.97.187.142:3306)/kipris_collector?charset=utf8&parseTime=True&loc=Local",
 		},
 		// DbType:       "mysql",
 		// DbConnString: "kipris_server:OnthemarkKipris0507!@@(61.97.187.142:3306)/kipris?charset=utf8&parseTime=True&loc=Local",
@@ -141,14 +140,6 @@ func (suite *CollectorTestSuite) SetupTest() {
 // 	lastApplicationNumber := suite.collector.GetYearLastApplicationNumber("2017")
 // 	fmt.Println(lastApplicationNumber)
 // }
-// func (suite *CollectorTestSuite) TestCreatTask() {
-// 	param := types.TaskParameters{
-// 		Year: "2020",
-// 		// SerialNumberRange: "1,1000",
-// 	}
-// 	err := suite.collector.CreateTask(param)
-// 	fmt.Println(err)
-// }
 
 // func (suite *CollectorTestSuite) TestCreaManulTask() {
 // 	param := types.TaskParameters{
@@ -176,6 +167,10 @@ func (suite *CollectorTestSuite) SetupTest() {
 // 	}
 // 	suite.collector.CreateTask(param)
 // 	suite.collector.StartCrawler(1)
+// }
+
+// func (suite *CollectorTestSuite) TestStarAutotCrawler() {
+// 	suite.collector.StartAutoCrawler()
 // }
 
 // func (suite *CollectorTestSuite) TestGetKiprisApplicationNumerList() {
@@ -391,6 +386,9 @@ func (suite *CollectorTestSuite) SetupTest() {
 // 		mid := suite.collector.CreateApplicationNumber(tc.productCode, tc.year, tc.serialNumber)
 // 		suite.Equal(mid, tc.result)
 // 	}
+// // }
+// func (suite *CollectorTestSuite) TestAutoCrawler() {
+// 	suite.collector.StartAutoCrawler()
 // }
 
 func TestCollectorSuite(t *testing.T) {

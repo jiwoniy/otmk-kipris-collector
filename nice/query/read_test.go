@@ -66,7 +66,7 @@ func TestSearchText(t *testing.T) {
 	}
 	defer db.Close()
 
-	client := NewKeeper(db)
+	client := NewQuery(db)
 
 	type testCase struct {
 		Id     string
@@ -97,7 +97,7 @@ func TestSearchPaging(t *testing.T) {
 	}
 	defer db.Close()
 
-	client := NewKeeper(db)
+	client := NewQuery(db)
 
 	type testCase struct {
 		Text               string
