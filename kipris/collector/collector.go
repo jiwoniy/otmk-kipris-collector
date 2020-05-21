@@ -29,7 +29,7 @@ type kiprisCollector struct {
 }
 
 var collectLogger *log.Logger
-var taskNumber = 1000
+var taskNumber = 5000
 var crawlSize = 25
 
 func init() {
